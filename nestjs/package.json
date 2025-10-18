@@ -22,7 +22,7 @@
     "test": "vitest",
     "test:coverage": "vitest --coverage",
     "prepublishOnly": "npm run build",
-    "publish": "npm publish"
+    "publish": "pnpm version patch && npm publish"
   },
   "files": [
     "dist",

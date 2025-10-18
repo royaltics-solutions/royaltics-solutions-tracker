@@ -1,6 +1,6 @@
 {
   "name": "@royaltics/tracker-react",
-  "version": "0.0.2",
+  "version": "0.0.20",
   "description": "React hooks for Royaltics Error Tracker",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -21,6 +21,7 @@
     "build": "vite build && tsc --emitDeclarationOnly",
     "test": "vitest",
     "test:coverage": "vitest --coverage",
+    "prepublishOnly": "npm run build",
     "publish": "npm publish"
   },
   "files": [
