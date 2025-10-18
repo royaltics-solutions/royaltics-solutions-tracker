@@ -399,7 +399,7 @@ MIT License - see LICENSE file for details
 For issues, questions, or feature requests:
 - GitHub Issues: [https://github.com/royaltics-solutions/royaltics-solutions-tracker/issues](https://github.com/royaltics-solutions/royaltics-solutions-tracker/issues)
 - Documentation: See platform-specific README files
-- Email: support@royaltics.com
+- Email: package.xxx@royaltics.com
 
 ## Changelog
 
@@ -408,4 +408,4 @@ See [CHANGELOG.md](./CHANGELOG.md) for version history and updates.
 
 ## Author
 
-@royaltics-solutions <packages.support@royaltics.com> [https://github.com/royaltics-solutions/](https://github.com/royaltics-solutions/)
+@royaltics-solutions <packages.package.xxx@royaltics.com> [https://github.com/royaltics-solutions/](https://github.com/royaltics-solutions/)
