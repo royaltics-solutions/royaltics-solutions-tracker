@@ -58,6 +58,16 @@ export class ErrorTrackerClient implements IErrorTrackerClient {
   }
 
   private attachErrorHandlers(): void {
+    const isNode = typeof process !== 'undefined' && process.versions?.node;
+
+    if (isNode) {
+      this.attachNodeErrorHandlers();
+    } else {
+      this.attachBrowserErrorHandlers();
+    }
+  }
+
+  private attachNodeErrorHandlers(): void {
     const uncaughtExceptionHandler = (error: Error): void => {
       if (this.config.debug) console.error(error, 'FATAL', { source: 'uncaughtException' });
       this.error(error, 'FATAL', { source: 'uncaughtException' });
@@ -82,6 +92,25 @@ export class ErrorTrackerClient implements IErrorTrackerClient {
     process.on('uncaughtException', uncaughtExceptionHandler);
     process.on('unhandledRejection', unhandledRejectionHandler);
     process.on('warning', warningHandler);
+  }
+
+  private attachBrowserErrorHandlers(): void {
+    const errorHandler = (event: ErrorEvent): void => {
+      event.preventDefault();
+      const error = event.error || new Error(event.message);
+      if (this.config.debug) console.error('Uncaught error:', error);
+      this.error(error, 'FATAL', { source: 'uncaughtException' });
+    };
+
+    const unhandledRejectionHandler = (event: PromiseRejectionEvent): void => {
+      event.preventDefault();
+      const error = event.reason instanceof Error ? event.reason : new Error(String(event.reason));
+      if (this.config.debug) console.error('Unhandled rejection:', event.reason);
+      this.error(error, 'ERROR', { source: 'unhandledRejection' });
+    };
+
+    window.addEventListener('error', errorHandler);
+    window.addEventListener('unhandledrejection', unhandledRejectionHandler);
   }
 
   private startBatchProcessor(): void {

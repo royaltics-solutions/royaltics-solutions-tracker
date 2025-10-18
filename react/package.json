@@ -39,7 +39,7 @@
     "react": "^18.0.0"
   },
   "dependencies": {
-    "@royaltics/tracker": "^0.0.4"
+    "@royaltics/tracker": "^0.0.5"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.0.0",
