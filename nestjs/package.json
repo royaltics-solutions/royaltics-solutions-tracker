@@ -1,0 +1,64 @@
+{
+  "name": "@royaltics/tracker-nestjs",
+  "version": "0.0.2",
+  "description": "NestJS module for Royaltics Error Tracker",
+  "type": "module",
+  "private": false,
+  "publishConfig": {
+    "access": "public"
+  },
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs",
+      "types": "./dist/index.d.ts"
+    }
+  },
+  "scripts": {
+    "build": "vite build && tsc --emitDeclarationOnly",
+    "test": "vitest",
+    "test:coverage": "vitest --coverage",
+    "prepublishOnly": "npm run build",
+    "publish": "npm publish"
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "keywords": [
+    "nestjs",
+    "tracker",
+    "monitoring",
+    "logging"
+  ],
+  "peerDependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.0.0"
+  },
+  "dependencies": {
+    "@royaltics/tracker": "^0.0.4"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/royaltics-solutions/royaltics-solutions-tracker"
+  },
+  "devDependencies": {
+    "@nestjs/common": "^10.0.0",
+    "@nestjs/core": "^10.0.0",
+    "@nestjs/testing": "^10.0.0",
+    "@types/node": "^20.0.0",
+    "@vitest/coverage-v8": "^1.0.0",
+    "reflect-metadata": "^0.1.13",
+    "rxjs": "^7.0.0",
+    "typescript": "^5.0.0",
+    "vite": "^5.0.0",
+    "vite-plugin-dts": "^3.0.0",
+    "vitest": "^1.0.0"
+  }
+}

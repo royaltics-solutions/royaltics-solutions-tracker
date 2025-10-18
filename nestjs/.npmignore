@@ -1,0 +1,36 @@
+# Source files
+src/
+*.ts
+!*.d.ts
+
+# Development files
+tsconfig.json
+vite.config.ts
+vitest.config.ts
+.gitignore
+
+# Tests
+test/
+tests/
+__tests__/
+*.test.ts
+*.spec.ts
+
+# Documentation
+docs/
+
+# CI/CD
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Misc
+coverage/
+.DS_Store
+*.log
