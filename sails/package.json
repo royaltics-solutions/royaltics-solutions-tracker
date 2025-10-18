@@ -1,6 +1,6 @@
 {
   "name": "@royaltics/tracker-sails",
-  "version": "0.0.2",
+  "version": "0.0.20",
   "description": "Sails.js hook for Royaltics Error Tracker",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -55,6 +55,6 @@
     "vitest": "^1.0.0"
   },
   "dependencies": {
-    "@royaltics/tracker": "^0.0.4"
+    "@royaltics/tracker": "^0.0.20"
   }
 }

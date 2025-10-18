@@ -183,7 +183,7 @@ export class ErrorTrackerClient implements IErrorTrackerClient {
   private async dispatchEvent(event: EventIssueInterface): Promise<void> {
     try {
       const eventString = this.eventBuilder.stringify(event);
-      const compressed = compressAndEncode(eventString);
+      const compressed = await compressAndEncode(eventString);
       await this.transport.send(compressed);
     } catch (err) {
       this.handleInternalError('Failed to dispatch event', err);

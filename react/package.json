@@ -1,6 +1,6 @@
 {
   "name": "@royaltics/tracker-react",
-  "version": "0.0.20",
+  "version": "0.0.21",
   "description": "React hooks for Royaltics Error Tracker",
   "type": "module",
   "main": "./dist/index.cjs",
@@ -40,7 +40,7 @@
     "react": "^18.0.0"
   },
   "dependencies": {
-    "@royaltics/tracker": "^0.0.5"
+    "@royaltics/tracker": "^0.0.20"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.0.0",

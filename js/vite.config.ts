@@ -11,8 +11,14 @@ export default defineConfig({
       fileName: (format) => format === 'es' ? 'index.js' : 'index.cjs'
     },
     rollupOptions: {
-      external: ['zlib', 'http', 'https', 'crypto']
+      external: (id) => {
+        // Mantener externos los módulos de Node.js para que se carguen dinámicamente
+        return ['zlib', 'http', 'https', 'crypto'].includes(id);
+      }
     }
   },
-  plugins: [dts()]
+  plugins: [dts()],
+  resolve: {
+    conditions: ['browser', 'module', 'import', 'default']
+  }
 });

@@ -1,4 +1,3 @@
-import { randomUUID } from 'crypto';
 import type {
   EventIssueInterface,
   EventLevel,
@@ -6,6 +5,8 @@ import type {
   IEventBuilder,
 } from '../types';
 import { safeStringify } from '../utils/json';
+import { generateUUID } from '../utils/uuid';
+import { isBrowser } from '../utils/environment';
 
 interface EventBuilderConfig {
   readonly app?: string;
@@ -29,8 +30,11 @@ export class EventBuilder implements IEventBuilder {
   ): EventIssueInterface {
     const culprit = this.extractCulprit(error);
 
+    const platform = this.config.platform ?? (isBrowser() ? 'browser' : (typeof process !== 'undefined' ? process.platform : 'unknown'));
+    const device = this.config.device ?? (isBrowser() ? navigator.userAgent : (typeof process !== 'undefined' && process.env.HOSTNAME) || 'unknown');
+
     return {
-      event_id: randomUUID(),
+      event_id: generateUUID(),
       title,
       level,
       event: this.serializeError(error),
@@ -38,10 +42,10 @@ export class EventBuilder implements IEventBuilder {
       context: {
         culprit,
         extra,
-        platform: this.config.platform ?? process.platform,
+        platform,
         app: this.config.app,
         version: this.config.version,
-        device: this.config.device ?? process.env.HOSTNAME ?? 'unknown',
+        device,
         tags: this.extractTags(error),
       },
     };

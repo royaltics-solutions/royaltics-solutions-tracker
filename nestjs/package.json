@@ -1,6 +1,6 @@
 {
   "name": "@royaltics/tracker-nestjs",
-  "version": "0.0.2",
+  "version": "0.0.20",
   "description": "NestJS module for Royaltics Error Tracker",
   "type": "module",
   "private": false,
@@ -22,7 +22,7 @@
     "test": "vitest",
     "test:coverage": "vitest --coverage",
     "prepublishOnly": "npm run build",
-    "publish": "pnpm version patch && npm publish"
+    "publish": "npm publish"
   },
   "files": [
     "dist",
@@ -42,7 +42,7 @@
     "rxjs": "^7.0.0"
   },
   "dependencies": {
-    "@royaltics/tracker": "^0.0.4"
+    "@royaltics/tracker": "^0.0.20"
   },
   "repository": {
     "type": "git",

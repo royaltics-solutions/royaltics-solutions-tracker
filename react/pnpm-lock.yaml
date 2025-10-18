@@ -9,8 +9,8 @@ importers:
   .:
     dependencies:
       '@royaltics/tracker':
-        specifier: ^0.0.5
-        version: 0.0.5
+        specifier: ^0.0.20
+        version: 0.0.20
     devDependencies:
       '@testing-library/jest-dom':
         specifier: ^6.0.0
@@ -482,8 +482,8 @@ packages:
     cpu: [x64]
     os: [win32]
 
-  '@royaltics/tracker@0.0.5':
-    resolution: {integrity: sha512-GAyGnwEQi+LRFXUD6TvsaT06jLOCtcB/GnJw5M2t5YM/+w0+pjbb/aCgJTsdCIkxT0FZoExtH87q1xxBDdMK7Q==}
+  '@royaltics/tracker@0.0.20':
+    resolution: {integrity: sha512-DFKUq15L3aws1eFaUcHekj9a3htd9H2hJWnqtFjsLX5CFNfMCNWb14N6866R/WpZMJKl+b3cR32Pr9ZC2b9l2g==}
 
   '@rushstack/node-core-library@4.0.2':
     resolution: {integrity: sha512-hyES82QVpkfQMeBMteQUnrhASL/KHPhd7iJ8euduwNJG4mu2GSOKybf0rOEjOm1Wz7CwJEUm9y0yD7jg2C1bfg==}
@@ -2084,7 +2084,7 @@ snapshots:
   '@rollup/rollup-win32-x64-msvc@4.52.4':
     optional: true
 
-  '@royaltics/tracker@0.0.5': {}
+  '@royaltics/tracker@0.0.20': {}
 
   '@rushstack/node-core-library@4.0.2(@types/node@20.19.22)':
     dependencies:
