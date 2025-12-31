@@ -1,8 +1,8 @@
 import { Component, type ReactNode, type ErrorInfo } from 'react';
 import type { ErrorTrackerClient } from '@royaltics/tracker';
+import { ErrorTrackerContext } from '../context/tracker-context';
 
 interface ErrorBoundaryProps {
-  readonly client: ErrorTrackerClient;
   readonly fallback?: ReactNode | ((error: Error) => ReactNode);
   readonly children: ReactNode;
 }
@@ -13,6 +13,9 @@ interface ErrorBoundaryState {
 }
 
 export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundaryState> {
+  static contextType = ErrorTrackerContext;
+  declare context: ErrorTrackerClient | null;
+
   constructor(props: ErrorBoundaryProps) {
     super(props);
     this.state = { hasError: false, error: null };
@@ -30,10 +33,15 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
       const normalizedError = error instanceof Error
         ? error
         : new Error(String(error ?? 'Unknown error'));
-      this.props.client.error(normalizedError, 'ERROR', {
-        componentStack: errorInfo.componentStack,
-        source: 'ErrorBoundary',
-      });
+
+      if (this.context) {
+        this.context.error(normalizedError, 'ERROR', {
+          componentStack: errorInfo.componentStack,
+          source: 'ErrorBoundary',
+        });
+      } else {
+        console.error('ErrorBoundary must be used within an ErrorTrackerProvider to track errors.');
+      }
     } catch (clientError) {
       console.error('Failed to track error:', clientError);
     }

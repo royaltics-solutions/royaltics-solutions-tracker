@@ -56,7 +56,7 @@ export interface SailsHookContext {
       info: (message: string, ...args: unknown[]) => void;
     };
     on?: (event: string, handler: (...args: any[]) => void) => void;
-    tracker?: SailsTrackerClient;
+    tracker?: Omit<SailsTrackerClient, 'capture'> & { capture: (error: Error | Record<string, unknown>, metadata?: Record<string, unknown>) => ErrorTrackerClient };
   };
 }
 

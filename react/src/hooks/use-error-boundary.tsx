@@ -19,7 +19,7 @@ export const useErrorBoundary = (): UseErrorBoundaryReturn => {
     readonly children: ReactNode;
     readonly fallback?: ReactNode | ((error: Error) => ReactNode);
   }): JSX.Element => (
-    <ErrorBoundary client={client} fallback={fallback}>
+    <ErrorBoundary fallback={fallback}>
       {children}
     </ErrorBoundary>
   );

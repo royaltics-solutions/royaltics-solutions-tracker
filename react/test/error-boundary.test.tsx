@@ -1,7 +1,9 @@
+/// <reference types="@testing-library/jest-dom" />
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { render, screen } from '@testing-library/react';
 import { ErrorBoundary } from '../src/components/error-boundary';
 import type { ErrorTrackerClient } from '@royaltics/tracker';
+import { ErrorTrackerContext } from '../src/context/tracker-context';
 import { afterEach } from 'node:test';
 
 describe('ErrorBoundary', () => {
@@ -35,9 +37,11 @@ describe('ErrorBoundary', () => {
   describe('Error Catching', () => {
     it('should catch errors from children', () => {
       render(
-        <ErrorBoundary client={mockClient}>
-          <ThrowError />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <ThrowError />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       expect(mockClient.error).toHaveBeenCalled();
@@ -45,9 +49,11 @@ describe('ErrorBoundary', () => {
 
     it('should track error with ERROR level', () => {
       render(
-        <ErrorBoundary client={mockClient}>
-          <ThrowError message="Component error" />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <ThrowError message="Component error" />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       expect(mockClient.error).toHaveBeenCalledWith(
@@ -61,9 +67,11 @@ describe('ErrorBoundary', () => {
 
     it('should include component stack in metadata', () => {
       render(
-        <ErrorBoundary client={mockClient}>
-          <ThrowError />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <ThrowError />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       expect(mockClient.error).toHaveBeenCalledWith(
@@ -80,9 +88,11 @@ describe('ErrorBoundary', () => {
       const errorMessage = 'Specific error message';
 
       render(
-        <ErrorBoundary client={mockClient}>
-          <ThrowError message={errorMessage} />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <ThrowError message={errorMessage} />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       const errorArg = (mockClient.error as any).mock.calls[0][0];
@@ -94,9 +104,11 @@ describe('ErrorBoundary', () => {
   describe('Default Fallback UI', () => {
     it('should render default fallback when error occurs', () => {
       render(
-        <ErrorBoundary client={mockClient}>
-          <ThrowError message="Display error" />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <ThrowError message="Display error" />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       expect(screen.getByText('Something went wrong')).toBeInTheDocument();
@@ -107,9 +119,11 @@ describe('ErrorBoundary', () => {
       const errorMessage = 'Custom error message';
 
       render(
-        <ErrorBoundary client={mockClient}>
-          <ThrowError message={errorMessage} />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <ThrowError message={errorMessage} />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       expect(screen.getByText(errorMessage)).toBeInTheDocument();
@@ -117,9 +131,11 @@ describe('ErrorBoundary', () => {
 
     it('should have proper styling for default fallback', () => {
       render(
-        <ErrorBoundary client={mockClient}>
-          <ThrowError />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <ThrowError />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       const fallbackDiv = screen.getByText('Something went wrong').parentElement;
@@ -135,9 +151,11 @@ describe('ErrorBoundary', () => {
       const customFallback = <div>Custom Error UI</div>;
 
       render(
-        <ErrorBoundary client={mockClient} fallback={customFallback}>
-          <ThrowError />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary fallback={customFallback}>
+            <ThrowError />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       expect(screen.getByText('Custom Error UI')).toBeInTheDocument();
@@ -153,9 +171,11 @@ describe('ErrorBoundary', () => {
       );
 
       render(
-        <ErrorBoundary client={mockClient} fallback={fallbackFn}>
-          <ThrowError message="Function fallback error" />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary fallback={fallbackFn}>
+            <ThrowError message="Function fallback error" />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       expect(screen.getByText('Error Occurred')).toBeInTheDocument();
@@ -166,9 +186,11 @@ describe('ErrorBoundary', () => {
       const fallbackFn = vi.fn((error: Error) => <div>{error.message}</div>);
 
       render(
-        <ErrorBoundary client={mockClient} fallback={fallbackFn}>
-          <ThrowError message="Test message" />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary fallback={fallbackFn}>
+            <ThrowError message="Test message" />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       expect(fallbackFn).toHaveBeenCalledWith(expect.any(Error));
@@ -185,9 +207,11 @@ describe('ErrorBoundary', () => {
       );
 
       render(
-        <ErrorBoundary client={mockClient} fallback={customFallback}>
-          <ThrowError />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary fallback={customFallback}>
+            <ThrowError />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       expect(screen.getByText('Application Error')).toBeInTheDocument();
@@ -199,9 +223,11 @@ describe('ErrorBoundary', () => {
   describe('Normal Rendering', () => {
     it('should render children when no error occurs', () => {
       render(
-        <ErrorBoundary client={mockClient}>
-          <div>Normal Content</div>
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <div>Normal Content</div>
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       expect(screen.getByText('Normal Content')).toBeInTheDocument();
@@ -210,11 +236,13 @@ describe('ErrorBoundary', () => {
 
     it('should render multiple children', () => {
       render(
-        <ErrorBoundary client={mockClient}>
-          <div>Child 1</div>
-          <div>Child 2</div>
-          <div>Child 3</div>
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <div>Child 1</div>
+            <div>Child 2</div>
+            <div>Child 3</div>
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       expect(screen.getByText('Child 1')).toBeInTheDocument();
@@ -226,12 +254,14 @@ describe('ErrorBoundary', () => {
       const NestedComponent = () => <span>Nested</span>;
 
       render(
-        <ErrorBoundary client={mockClient}>
-          <div>
-            Parent
-            <NestedComponent />
-          </div>
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <div>
+              Parent
+              <NestedComponent />
+            </div>
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       expect(screen.getByText('Parent')).toBeInTheDocument();
@@ -241,10 +271,12 @@ describe('ErrorBoundary', () => {
 
   describe('Error State Management', () => {
     it('should set hasError state to true when error occurs', () => {
-      const { container } = render(
-        <ErrorBoundary client={mockClient}>
-          <ThrowError />
-        </ErrorBoundary>
+      render(
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <ThrowError />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       // Fallback is rendered, meaning hasError is true
@@ -253,9 +285,11 @@ describe('ErrorBoundary', () => {
 
     it('should store error in state', () => {
       render(
-        <ErrorBoundary client={mockClient}>
-          <ThrowError message="Stored error" />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <ThrowError message="Stored error" />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       // Error message is displayed, meaning error is stored
@@ -270,9 +304,11 @@ describe('ErrorBoundary', () => {
       };
 
       render(
-        <ErrorBoundary client={mockClient}>
-          <Child1 />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <Child1 />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       expect(mockClient.error).toHaveBeenCalledTimes(1);
@@ -282,9 +318,11 @@ describe('ErrorBoundary', () => {
     it('should only catch the first error', () => {
       // ErrorBoundary catches the first error and stops rendering
       render(
-        <ErrorBoundary client={mockClient}>
-          <ThrowError message="First error" />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <ThrowError message="First error" />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       expect(mockClient.error).toHaveBeenCalledTimes(1);
@@ -299,12 +337,16 @@ describe('ErrorBoundary', () => {
       } as any;
 
       render(
-        <ErrorBoundary client={mockClient}>
-          <div>Outer</div>
-          <ErrorBoundary client={innerClient}>
-            <ThrowError message="Inner error" />
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <div>Outer</div>
+            <ErrorTrackerContext.Provider value={innerClient}>
+              <ErrorBoundary>
+                <ThrowError message="Inner error" />
+              </ErrorBoundary>
+            </ErrorTrackerContext.Provider>
           </ErrorBoundary>
-        </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       // Inner boundary should catch the error
@@ -322,11 +364,15 @@ describe('ErrorBoundary', () => {
       } as any;
 
       render(
-        <ErrorBoundary client={mockClient}>
-          <ErrorBoundary client={innerClient}>
-            <ThrowError />
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <ErrorTrackerContext.Provider value={innerClient}>
+              <ErrorBoundary>
+                <ThrowError />
+              </ErrorBoundary>
+            </ErrorTrackerContext.Provider>
           </ErrorBoundary>
-        </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       // Both boundaries should be involved
@@ -337,9 +383,11 @@ describe('ErrorBoundary', () => {
   describe('Client Integration', () => {
     it('should call client.error with correct parameters', () => {
       render(
-        <ErrorBoundary client={mockClient}>
-          <ThrowError message="Client test" />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <ThrowError message="Client test" />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       expect(mockClient.error).toHaveBeenCalledWith(
@@ -364,9 +412,11 @@ describe('ErrorBoundary', () => {
 
       // Should not crash even if client throws
       render(
-        <ErrorBoundary client={errorClient}>
-          <ThrowError />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={errorClient}>
+          <ErrorBoundary>
+            <ThrowError />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       // Verify the fallback is rendered despite client error
@@ -382,9 +432,11 @@ describe('ErrorBoundary', () => {
       };
 
       render(
-        <ErrorBoundary client={mockClient}>
-          <ThrowNull />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <ThrowNull />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       expect(mockClient.error).toHaveBeenCalled();
@@ -396,9 +448,11 @@ describe('ErrorBoundary', () => {
       };
 
       render(
-        <ErrorBoundary client={mockClient}>
-          <ThrowString />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <ThrowString />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       expect(mockClient.error).toHaveBeenCalled();
@@ -412,9 +466,11 @@ describe('ErrorBoundary', () => {
       };
 
       render(
-        <ErrorBoundary client={mockClient}>
-          <ThrowNoMessage />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <ThrowNoMessage />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       expect(mockClient.error).toHaveBeenCalled();
@@ -424,9 +480,11 @@ describe('ErrorBoundary', () => {
   describe('Lifecycle', () => {
     it('should call componentDidCatch', () => {
       render(
-        <ErrorBoundary client={mockClient}>
-          <ThrowError />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <ThrowError />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       // componentDidCatch is called, which calls client.error
@@ -435,9 +493,11 @@ describe('ErrorBoundary', () => {
 
     it('should call getDerivedStateFromError', () => {
       render(
-        <ErrorBoundary client={mockClient}>
-          <ThrowError message="State update" />
-        </ErrorBoundary>
+        <ErrorTrackerContext.Provider value={mockClient}>
+          <ErrorBoundary>
+            <ThrowError message="State update" />
+          </ErrorBoundary>
+        </ErrorTrackerContext.Provider>
       );
 
       // State is updated, fallback is rendered

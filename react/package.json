@@ -1,60 +1,61 @@
 {
-  "name": "@royaltics/tracker-react",
-  "version": "0.0.21",
-  "description": "React hooks for Royaltics Error Tracker",
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "private": false,
-  "publishConfig": {
-    "access": "public"
-  },
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "scripts": {
-    "build": "vite build && tsc --emitDeclarationOnly",
-    "test": "vitest",
-    "test:coverage": "vitest --coverage",
-    "prepublishOnly": "npm run build",
-    "publish": "npm publish"
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "keywords": [
-    "react",
-    "hooks",
-    "tracker",
-    "monitoring",
-    "error-boundary"
-  ],
-  "peerDependencies": {
-    "react": "^18.0.0"
-  },
-  "dependencies": {
-    "@royaltics/tracker": "^0.0.20"
-  },
-  "devDependencies": {
-    "@testing-library/jest-dom": "^6.0.0",
-    "@testing-library/react": "^14.0.0",
-    "@types/node": "^20.0.0",
-    "@types/react": "^18.0.0",
-    "@vitejs/plugin-react": "^4.0.0",
-    "@vitest/coverage-v8": "^1.0.0",
-    "jsdom": "^23.0.0",
-    "react": "^18.0.0",
-    "react-dom": "^18.0.0",
-    "typescript": "^5.0.0",
-    "vite": "^5.0.0",
-    "vite-plugin-dts": "^3.0.0",
-    "vitest": "^1.0.0"
-  }
+    "name": "@royaltics/tracker-react",
+    "version": "0.0.24",
+    "description": "React hooks for Royaltics Error Tracker",
+    "type": "module",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "private": false,
+    "publishConfig": {
+        "access": "public"
+    },
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "scripts": {
+        "build": "vite build",
+        "test": "vitest",
+        "test:coverage": "vitest --coverage",
+        "prepublishOnly": "npm run build",
+        "publish": "npm publish"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE"
+    ],
+    "keywords": [
+        "react",
+        "hooks",
+        "tracker",
+        "monitoring",
+        "error-boundary"
+    ],
+    "peerDependencies": {
+        "react": ">=18.0.0"
+    },
+    "dependencies": {
+        "@royaltics/tracker": "^0.0.20"
+    },
+    "devDependencies": {
+        "@testing-library/jest-dom": "^6.0.0",
+        "@testing-library/react": "^14.0.0",
+        "@types/node": "^20.0.0",
+        "@types/react": "^18.0.0",
+        "@vitejs/plugin-react": "^4.0.0",
+        "@vitest/coverage-v8": "^1.0.0",
+        "jsdom": "^23.0.0",
+        "react": "^18.0.0",
+        "react-dom": "^18.0.0",
+        "typescript": "^5.0.0",
+        "vite": "^5.0.0",
+        "vite-plugin-dts": "^4.0.0",
+        "vitest": "^1.0.0"
+    },
+    "pnpm": {}
 }

@@ -23,10 +23,10 @@ yarn add @royaltics/tracker-sails
 
 ## Configuration
 
-Create or update `config/errorTracker.js`:
+Create or update `config/tracker.js`:
 
 ```javascript
-module.exports.errorTracker = {
+module.exports.tracker = {
   webhookUrl: process.env.ERROR_TRACKER_WEBHOOK_URL,
   licenseId: process.env.ERROR_TRACKER_LICENSE_ID,
   licenseDevice: process.env.ERROR_TRACKER_DEVICE || 'sails-server',
@@ -62,15 +62,6 @@ module.exports.errorTracker = {
 
 ## Usage
 
-### Install the Hook
-
-In `config/hooks.js`:
-
-```javascript
-module.exports.hooks = {
-  errorTracker: require('@royaltics/tracker-sails').errorTracker
-};
-```
 
 ### Automatic Error Tracking
 
@@ -90,7 +81,7 @@ module.exports = {
     try {
       // Your code
     } catch (error) {
-      sails.hooks.errorTracker.client.error(error, 'ERROR', {
+      sails.hooks.tracker.error(error, 'ERROR', {
         userId: req.session.userId,
         action: 'someAction'
       });
@@ -104,7 +95,7 @@ module.exports = {
 ### Track Custom Events
 
 ```javascript
-sails.hooks.errorTracker.client.event('User registered', 'INFO', {
+sails.hooks.tracker.event('User registered', 'INFO', {
   userId: user.id,
   email: user.email
 });
@@ -151,7 +142,7 @@ ERROR_TRACKER_DEVICE=production-server-01
 ### Ignore Health Check Routes
 
 ```javascript
-module.exports.errorTracker = {
+module.exports.tracker = {
   // ... other config
   ignoredRoutes: [
     '/health',
@@ -165,7 +156,7 @@ module.exports.errorTracker = {
 ### Capture Only Errors
 
 ```javascript
-module.exports.errorTracker = {
+module.exports.tracker = {
   // ... other config
   captureRoutes: false,  // Don't track successful requests
   captureQueries: true,  // But include query params in errors

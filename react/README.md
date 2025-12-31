@@ -51,14 +51,14 @@ function App() {
 import { useErrorTracker } from '@royaltics/tracker-react';
 
 function MyComponent() {
-  const { trackError, trackEvent } = useErrorTracker();
+  const { error, event } = useErrorTracker();
 
   const handleClick = async () => {
     try {
       await someAsyncOperation();
-      trackEvent('Button clicked', 'INFO', { buttonId: 'submit' });
-    } catch (error) {
-      trackError(error, 'ERROR', { action: 'handleClick' });
+      event('Button clicked', 'INFO', { buttonId: 'submit' });
+    } catch (err) {
+      error(err, { action: 'handleClick' });
     }
   };
 
@@ -95,30 +95,30 @@ function App() {
 
 ### useErrorTracker Hook
 
-Track errors and events from any component:
+Track errors and events from any component. The hook provides specialized methods for different severity levels.
 
 ```tsx
 import { useErrorTracker } from '@royaltics/tracker-react';
 
 function UserProfile() {
-  const { trackError, trackEvent, flush } = useErrorTracker();
+  const { error, info, flush } = useErrorTracker();
 
   const loadUserData = async (userId: string) => {
     try {
       const data = await fetchUser(userId);
-      trackEvent('User data loaded', 'INFO', { userId });
+      info('User data loaded', { userId });
       return data;
-    } catch (error) {
-      trackError(error, 'ERROR', {
+    } catch (err) {
+      error(err, {
         userId,
         action: 'loadUserData'
       });
-      throw error;
+      throw err;
     }
   };
 
   const handleLogout = async () => {
-    trackEvent('User logging out', 'INFO');
+    info('User logging out');
     await flush(); // Ensure events are sent before logout
     // ... logout logic
   };
@@ -129,7 +129,17 @@ function UserProfile() {
 
 ### Error Boundary
 
-Catch React component errors:
+Catch React component errors and report them to the tracker.
+
+#### Props
+
+| Prop | Type | Required | Description |
+|------|------|----------|-------------|
+| `fallback` | `ReactNode \| ((err: Error) => ReactNode)` | No | UI to display when an error is caught. |
+| `children` | `ReactNode` | Yes | The component tree to monitor. |
+
+> [!IMPORTANT]
+> `ErrorBoundary` must be placed inside an `ErrorTrackerProvider`. It automatically uses the client provided by the context to report errors.
 
 ```tsx
 import { ErrorBoundary } from '@royaltics/tracker-react';
@@ -139,7 +149,7 @@ function App() {
     <ErrorTrackerProvider config={config}>
       <ErrorBoundary
         fallback={(error) => (
-          <div>
+          <div style={{ padding: '20px' }}>
             <h1>Something went wrong</h1>
             <p>{error.message}</p>
           </div>
@@ -193,7 +203,15 @@ interface ErrorTrackerProviderProps {
     headers?: Record<string, string>;
   };
   children: ReactNode;
+}
+```
+
+### ErrorBoundary Props
+
+```typescript
+interface ErrorBoundaryProps {
   fallback?: ReactNode | ((error: Error) => ReactNode);
+  children: ReactNode;
 }
 ```
 
@@ -201,18 +219,18 @@ interface ErrorTrackerProviderProps {
 
 ```typescript
 interface UseErrorTrackerReturn {
-  trackError: (
-    error: Error | Record<string, unknown>,
-    level?: EventLevel,
-    metadata?: Record<string, unknown>
-  ) => void;
-  
-  trackEvent: (
-    title: string,
-    level?: EventLevel,
-    metadata?: Record<string, unknown>
-  ) => void;
-  
+  // Error reporting (severity levels)
+  error: (err: Error | Record<string, unknown>, meta?: Record<string, unknown>) => void;
+  fatal: (err: Error | Record<string, unknown>, meta?: Record<string, unknown>) => void;
+  debug: (err: Error | Record<string, unknown>, meta?: Record<string, unknown>) => void;
+  capture: (err: Error | Record<string, unknown>, level?: EventLevel, meta?: Record<string, unknown>) => void;
+
+  // Event reporting
+  info: (title: string, meta?: Record<string, unknown>) => void;
+  warn: (title: string, meta?: Record<string, unknown>) => void;
+  event: (title: string, level?: EventLevel, meta?: Record<string, unknown>) => void;
+
+  // Utils
   flush: () => Promise<void>;
 }
 ```
@@ -229,16 +247,16 @@ type EventLevel = 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR' | 'FATAL';
 
 ```tsx
 function LoginForm() {
-  const { trackError, trackEvent } = useErrorTracker();
+  const { error, info } = useErrorTracker();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     try {
       await login(email, password);
-      trackEvent('User logged in', 'INFO', { email });
-    } catch (error) {
-      trackError(error, 'WARNING', {
+      info('User logged in', { email });
+    } catch (err) {
+      error(err, {
         email,
         action: 'login'
       });
@@ -254,19 +272,19 @@ function LoginForm() {
 
 ```tsx
 function DataFetcher() {
-  const { trackError } = useErrorTracker();
+  const { error } = useErrorTracker();
   const [data, setData] = useState(null);
 
   useEffect(() => {
     fetchData()
       .then(setData)
-      .catch((error) => {
-        trackError(error, 'ERROR', {
+      .catch((err) => {
+        error(err, {
           endpoint: '/api/data',
           timestamp: new Date().toISOString()
         });
       });
-  }, [trackError]);
+  }, [error]);
 
   return <div>{data}</div>;
 }

@@ -1,60 +1,62 @@
 {
-  "name": "@royaltics/tracker-sails",
-  "version": "0.0.20",
-  "description": "Sails.js hook for Royaltics Error Tracker",
-  "type": "module",
-  "main": "./dist/index.cjs",
-  "module": "./dist/index.js",
-  "types": "./dist/index.d.ts",
-  "private": false,
-  "publishConfig": {
-    "access": "public"
-  },
-  "exports": {
-    ".": {
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
-      "types": "./dist/index.d.ts"
-    }
-  },
-  "scripts": {
-    "build": "vite build && tsc --emitDeclarationOnly",
-    "test": "vitest",
-    "test:coverage": "vitest --coverage",
-    "prepublishOnly": "npm run build",
-    "publish": "npm publish"
-  },
-  "files": [
-    "dist",
-    "README.md",
-    "LICENSE"
-  ],
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/royaltics-solutions/royaltics-solutions-tracker"
-  },
-  "keywords": [
-    "sails",
-    "sailsjs",
-    "tracker",
-    "monitoring",
-    "logging"
-  ],
-  "sails": {
-    "isHook": true
-  },
-  "peerDependencies": {
-    "sails": "^1.0.0"
-  },
-  "devDependencies": {
-    "@types/node": "^20.0.0",
-    "@vitest/coverage-v8": "^1.0.0",
-    "typescript": "^5.0.0",
-    "vite": "^5.0.0",
-    "vite-plugin-dts": "^3.0.0",
-    "vitest": "^1.0.0"
-  },
-  "dependencies": {
-    "@royaltics/tracker": "^0.0.20"
-  }
+    "name": "@royaltics/tracker-sails",
+    "version": "0.0.25",
+    "description": "Sails.js hook for Royaltics Error Tracker",
+    "type": "module",
+    "main": "./dist/index.cjs",
+    "module": "./dist/index.js",
+    "types": "./dist/index.d.ts",
+    "private": false,
+    "publishConfig": {
+        "access": "public"
+    },
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "require": "./dist/index.cjs",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "scripts": {
+        "build": "vite build && tsc --emitDeclarationOnly",
+        "test": "vitest",
+        "test:coverage": "vitest --coverage",
+        "prepublishOnly": "npm run build",
+        "publish": "npm publish"
+    },
+    "files": [
+        "dist",
+        "README.md",
+        "LICENSE"
+    ],
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/royaltics-solutions/royaltics-solutions-tracker"
+    },
+    "keywords": [
+        "sails",
+        "sailsjs",
+        "tracker",
+        "monitoring",
+        "logging"
+    ],
+    "sails": {
+        "isHook": true,
+        "hookName": "tracker"
+    },
+    "peerDependencies": {
+        "sails": "^1.0.0"
+    },
+    "dependencies": {
+        "@royaltics/tracker": "^0.0.20"
+    },
+    "devDependencies": {
+        "@types/node": "^20.19.27",
+        "@vitest/coverage-v8": "^1.6.1",
+        "typescript": "^5.9.3",
+        "vite": "^5.4.21",
+        "vite-plugin-dts": "^3.9.1",
+        "vitest": "^1.6.1"
+    },
+    "pnpm": {}
 }

@@ -1,3 +1,4 @@
+/// <reference types="@testing-library/jest-dom" />
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act } from '@testing-library/react';
 import { useErrorTracker } from '../src/hooks/use-tracker';
@@ -43,25 +44,25 @@ describe('useErrorTracker', () => {
     it('should return tracker functions', () => {
       const { result } = renderHook(() => useErrorTracker(), { wrapper });
 
-      expect(result.current).toHaveProperty('trackError');
-      expect(result.current).toHaveProperty('trackEvent');
+      expect(result.current).toHaveProperty('error');
+      expect(result.current).toHaveProperty('event');
       expect(result.current).toHaveProperty('flush');
-      expect(typeof result.current.trackError).toBe('function');
-      expect(typeof result.current.trackEvent).toBe('function');
+      expect(typeof result.current.error).toBe('function');
+      expect(typeof result.current.event).toBe('function');
       expect(typeof result.current.flush).toBe('function');
     });
 
     it('should maintain stable function references', () => {
       const { result, rerender } = renderHook(() => useErrorTracker(), { wrapper });
 
-      const initialTrackError = result.current.trackError;
-      const initialTrackEvent = result.current.trackEvent;
+      const initialError = result.current.error;
+      const initialEvent = result.current.event;
       const initialFlush = result.current.flush;
 
       rerender();
 
-      expect(result.current.trackError).toBe(initialTrackError);
-      expect(result.current.trackEvent).toBe(initialTrackEvent);
+      expect(result.current.error).toBe(initialError);
+      expect(result.current.event).toBe(initialEvent);
       expect(result.current.flush).toBe(initialFlush);
     });
   });
@@ -72,7 +73,7 @@ describe('useErrorTracker', () => {
       const error = new Error('Test error');
 
       act(() => {
-        result.current.trackError(error);
+        result.current.error(error);
       });
 
       expect(mockClient.error).toHaveBeenCalledWith(error, undefined, undefined);
@@ -83,7 +84,7 @@ describe('useErrorTracker', () => {
       const error = new Error('Fatal error');
 
       act(() => {
-        result.current.trackError(error, 'FATAL');
+        result.current.fatal(error);
       });
 
       expect(mockClient.error).toHaveBeenCalledWith(error, 'FATAL', undefined);
@@ -95,7 +96,7 @@ describe('useErrorTracker', () => {
       const metadata = { userId: '123', action: 'submit' };
 
       act(() => {
-        result.current.trackError(error, 'ERROR', metadata);
+        result.current.error(error, metadata);
       });
 
       expect(mockClient.error).toHaveBeenCalledWith(error, 'ERROR', metadata);
@@ -106,7 +107,7 @@ describe('useErrorTracker', () => {
       const errorObj = { code: 'ERR_001', message: 'Custom error' };
 
       act(() => {
-        result.current.trackError(errorObj, 'ERROR');
+        result.current.error(errorObj);
       });
 
       expect(mockClient.error).toHaveBeenCalledWith(errorObj, 'ERROR', undefined);
@@ -118,8 +119,8 @@ describe('useErrorTracker', () => {
       const error2 = new Error('Error 2');
 
       act(() => {
-        result.current.trackError(error1, 'ERROR');
-        result.current.trackError(error2, 'WARNING');
+        result.current.error(error1);
+        result.current.capture(error2, 'WARNING');
       });
 
       expect(mockClient.error).toHaveBeenCalledTimes(2);
@@ -131,11 +132,11 @@ describe('useErrorTracker', () => {
       const { result } = renderHook(() => useErrorTracker(), { wrapper });
 
       act(() => {
-        result.current.trackError(new Error('Debug'), 'DEBUG');
-        result.current.trackError(new Error('Info'), 'INFO');
-        result.current.trackError(new Error('Warning'), 'WARNING');
-        result.current.trackError(new Error('Error'), 'ERROR');
-        result.current.trackError(new Error('Fatal'), 'FATAL');
+        result.current.debug(new Error('Debug'));
+        result.current.capture(new Error('Info'), 'INFO');
+        result.current.capture(new Error('Warning'), 'WARNING');
+        result.current.error(new Error('Error'));
+        result.current.fatal(new Error('Fatal'));
       });
 
       expect(mockClient.error).toHaveBeenCalledTimes(5);
@@ -147,7 +148,7 @@ describe('useErrorTracker', () => {
       const { result } = renderHook(() => useErrorTracker(), { wrapper });
 
       act(() => {
-        result.current.trackEvent('User logged in');
+        result.current.event('User logged in');
       });
 
       expect(mockClient.event).toHaveBeenCalledWith('User logged in', undefined, undefined);
@@ -157,7 +158,7 @@ describe('useErrorTracker', () => {
       const { result } = renderHook(() => useErrorTracker(), { wrapper });
 
       act(() => {
-        result.current.trackEvent('Debug event', 'DEBUG');
+        result.current.event('Debug event', 'DEBUG');
       });
 
       expect(mockClient.event).toHaveBeenCalledWith('Debug event', 'DEBUG', undefined);
@@ -168,7 +169,7 @@ describe('useErrorTracker', () => {
       const metadata = { userId: '123', ip: '127.0.0.1' };
 
       act(() => {
-        result.current.trackEvent('User action', 'INFO', metadata);
+        result.current.event('User action', 'INFO', metadata);
       });
 
       expect(mockClient.event).toHaveBeenCalledWith('User action', 'INFO', metadata);
@@ -178,9 +179,9 @@ describe('useErrorTracker', () => {
       const { result } = renderHook(() => useErrorTracker(), { wrapper });
 
       act(() => {
-        result.current.trackEvent('Event 1', 'INFO');
-        result.current.trackEvent('Event 2', 'DEBUG');
-        result.current.trackEvent('Event 3', 'WARNING');
+        result.current.event('Event 1', 'INFO');
+        result.current.event('Event 2', 'DEBUG');
+        result.current.event('Event 3', 'WARNING');
       });
 
       expect(mockClient.event).toHaveBeenCalledTimes(3);
@@ -190,11 +191,11 @@ describe('useErrorTracker', () => {
       const { result } = renderHook(() => useErrorTracker(), { wrapper });
 
       act(() => {
-        result.current.trackEvent('Debug event', 'DEBUG');
-        result.current.trackEvent('Info event', 'INFO');
-        result.current.trackEvent('Warning event', 'WARNING');
-        result.current.trackEvent('Error event', 'ERROR');
-        result.current.trackEvent('Fatal event', 'FATAL');
+        result.current.event('Debug event', 'DEBUG');
+        result.current.event('Info event', 'INFO');
+        result.current.event('Warning event', 'WARNING');
+        result.current.event('Error event', 'ERROR');
+        result.current.event('Fatal event', 'FATAL');
       });
 
       expect(mockClient.event).toHaveBeenCalledTimes(5);
@@ -246,8 +247,8 @@ describe('useErrorTracker', () => {
       const { result: result2 } = renderHook(() => useErrorTracker(), { wrapper });
 
       act(() => {
-        result1.current.trackError(new Error('From hook 1'));
-        result2.current.trackError(new Error('From hook 2'));
+        result1.current.error(new Error('From hook 1'));
+        result2.current.error(new Error('From hook 2'));
       });
 
       expect(mockClient.error).toHaveBeenCalledTimes(2);
@@ -258,11 +259,11 @@ describe('useErrorTracker', () => {
       const { result: result2 } = renderHook(() => useErrorTracker(), { wrapper });
 
       act(() => {
-        result1.current.trackEvent('Event 1');
+        result1.current.event('Event 1');
       });
 
       act(() => {
-        result2.current.trackEvent('Event 2');
+        result2.current.event('Event 2');
       });
 
       // Both hooks should use the same client
@@ -280,7 +281,7 @@ describe('useErrorTracker', () => {
 
       expect(() => {
         act(() => {
-          result.current.trackError(new Error('Test'));
+          result.current.error(new Error('Test'));
         });
       }).toThrow('Client error');
     });
@@ -294,7 +295,7 @@ describe('useErrorTracker', () => {
 
       expect(() => {
         act(() => {
-          result.current.trackEvent('Test event');
+          result.current.event('Test event');
         });
       }).toThrow('Event error');
     });
@@ -306,8 +307,8 @@ describe('useErrorTracker', () => {
 
       const TestComponent = () => {
         renderCount++;
-        const { trackError } = useErrorTracker();
-        return <button onClick={() => trackError(new Error('Test'))}>Track</button>;
+        const { error } = useErrorTracker();
+        return <button onClick={() => error(new Error('Test'))}>Track</button>;
       };
 
       const { rerender } = renderHook(() => useErrorTracker(), { wrapper });
@@ -338,7 +339,7 @@ describe('useErrorTracker', () => {
       };
 
       act(() => {
-        result.current.trackError(new Error('Complex error'), 'ERROR', complexMetadata);
+        result.current.error(new Error('Complex error'), complexMetadata);
       });
 
       expect(mockClient.error).toHaveBeenCalledWith(
@@ -356,7 +357,7 @@ describe('useErrorTracker', () => {
       };
 
       act(() => {
-        result.current.trackEvent('Batch operation failed', 'ERROR', metadata);
+        result.current.event('Batch operation failed', 'ERROR', metadata);
       });
 
       expect(mockClient.event).toHaveBeenCalledWith(
