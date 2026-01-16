@@ -1,0 +1,24 @@
+name: royaltics_error_tracker
+description: A Flutter error tracking library compatible with Royaltics Error Tracker solutions.
+version: 0.0.1
+homepage: https://royaltics.com
+
+environment:
+  sdk: '>=3.0.0 <4.0.0'
+  flutter: ">=3.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  http: ^1.2.0
+  uuid: ^4.3.3
+  device_info_plus: ^10.1.0
+  package_info_plus: ^8.0.0
+  archive: ^3.6.1
+  path_provider: ^2.1.2
+  stack_trace: ^1.12.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^3.0.0
