@@ -1,6 +1,6 @@
 {
     "name": "@royaltics/tracker-nestjs",
-    "version": "0.0.22",
+    "version": "0.0.24",
     "description": "NestJS module for Royaltics Error Tracker",
     "type": "module",
     "private": false,
