@@ -1,6 +1,6 @@
 {
     "name": "@royaltics/tracker",
-    "version": "0.0.20",
+    "version": "0.0.21",
     "type": "module",
     "private": false,
     "publishConfig": {
@@ -17,7 +17,7 @@
         }
     },
     "scripts": {
-        "build": "vite build && tsc --emitDeclarationOnly",
+        "build": "vite build",
         "test": "vitest",
         "test:coverage": "vitest --coverage",
         "test:hook": "vitest test/webhook",

@@ -78,6 +78,13 @@ export const useErrorTracker = (): UseErrorTrackerReturn => {
     [client]
   );
 
+  const account = useCallback(
+    (accountOrEntity: any, entity_id?: string) => {
+      return client.account(accountOrEntity, entity_id as any);
+    },
+    [client]
+  );
+
   const flush = useCallback(async () => {
     await client.forceFlush();
   }, [client]);
@@ -90,6 +97,7 @@ export const useErrorTracker = (): UseErrorTrackerReturn => {
     info,
     warn,
     event,
+    account,
     flush,
   };
 };

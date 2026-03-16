@@ -16,14 +16,6 @@ export class ConfigValidator {
       throw new Error('webhookUrl must be a valid HTTP/HTTPS URL');
     }
 
-    if (!config.licenseId || config.licenseId.trim().length === 0) {
-      throw new Error('licenseId is required and cannot be empty');
-    }
-
-    if (!config.licenseDevice || config.licenseDevice.trim().length === 0) {
-      throw new Error('licenseDevice is required and cannot be empty');
-    }
-
     if (config.timeout !== undefined) {
       if (config.timeout < MIN_TIMEOUT || config.timeout > MAX_TIMEOUT) {
         throw new Error(`timeout must be between ${MIN_TIMEOUT} and ${MAX_TIMEOUT}ms`);
@@ -48,11 +40,8 @@ export class ConfigValidator {
   static sanitize(config: ClientConfig): ClientConfig {
     return {
       ...config,
-      licenseId: config.licenseId.trim(),
-      licenseDevice: config.licenseDevice.trim(),
-      licenseName: config.licenseName?.trim(),
-      app: config.app?.trim(),
-      version: config.version?.trim(),
+      app_name: config.app_name?.trim(),
+      app_version: config.app_version?.trim(),
       platform: config.platform?.trim(),
     };
   }

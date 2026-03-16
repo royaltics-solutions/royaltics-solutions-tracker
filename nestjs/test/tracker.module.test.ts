@@ -10,11 +10,8 @@ describe('ErrorTrackerModule', () => {
         it('should provide ErrorTrackerService with static configuration', async () => {
             const config: ErrorTrackerModuleOptions = {
                 webhookUrl: 'https://api.example.com/webhook',
-                licenseId: 'test-license-id',
-                licenseDevice: 'test-device',
-                licenseName: 'Test License',
-                app: 'test-app',
-                version: '1.0.0',
+                app_name: 'test-app',
+                app_version: '1.0.0',
             };
 
             const module: TestingModule = await Test.createTestingModule({
@@ -32,8 +29,7 @@ describe('ErrorTrackerModule', () => {
         it('should create a global module', async () => {
             const config: ErrorTrackerModuleOptions = {
                 webhookUrl: 'https://api.example.com/webhook',
-                licenseId: 'test-license-id',
-                licenseDevice: 'test-device',
+                
             };
 
             const dynamicModule = ErrorTrackerModule.forRoot(config);
@@ -46,8 +42,7 @@ describe('ErrorTrackerModule', () => {
         it('should provide options with minimal configuration', async () => {
             const config: ErrorTrackerModuleOptions = {
                 webhookUrl: 'https://api.example.com/webhook',
-                licenseId: 'test-license',
-                licenseDevice: 'test-device',
+           
             };
 
             const module: TestingModule = await Test.createTestingModule({
@@ -66,9 +61,8 @@ describe('ErrorTrackerModule', () => {
         it('should provide ErrorTrackerService with useFactory', async () => {
             const config: ErrorTrackerModuleOptions = {
                 webhookUrl: 'https://api.example.com/webhook',
-                licenseId: 'test-license-id',
-                licenseDevice: 'test-device',
-                app: 'async-app',
+              
+                app_name: 'async-app',
             };
 
             const module: TestingModule = await Test.createTestingModule({
@@ -129,9 +123,7 @@ describe('ErrorTrackerModule', () => {
                 createErrorTrackerOptions(): ErrorTrackerModuleOptions {
                     return {
                         webhookUrl: 'https://api.example.com/webhook',
-                        licenseId: 'class-license',
-                        licenseDevice: 'class-device',
-                        app: 'class-app',
+                        app_name: 'class-app',
                     };
                 }
             }
@@ -149,8 +141,7 @@ describe('ErrorTrackerModule', () => {
 
             expect(service).toBeDefined();
             expect(options.webhookUrl).toBe('https://api.example.com/webhook');
-            expect(options.licenseId).toBe('class-license');
-            expect(options.app).toBe('class-app');
+            expect(options.app_name).toBe('class-app');
         });
 
         it('should provide ErrorTrackerService with useExisting', async () => {
@@ -158,8 +149,7 @@ describe('ErrorTrackerModule', () => {
                 createErrorTrackerOptions(): ErrorTrackerModuleOptions {
                     return {
                         webhookUrl: 'https://api.example.com/webhook',
-                        licenseId: 'existing-license',
-                        licenseDevice: 'existing-device',
+                        app_name: 'existing-app',
                     };
                 }
             }
@@ -177,7 +167,7 @@ describe('ErrorTrackerModule', () => {
             const options = module.get(ERROR_TRACKER_OPTIONS);
 
             expect(service).toBeDefined();
-            expect(options.licenseId).toBe('existing-license');
+            expect(options.app_name).toBe('existing-app');
         });
 
         it('should create a global module with async configuration', async () => {
@@ -197,8 +187,7 @@ describe('ErrorTrackerModule', () => {
         it('should support async factory with Promise', async () => {
             const config: ErrorTrackerModuleOptions = {
                 webhookUrl: 'https://api.example.com/webhook',
-                licenseId: 'async-license',
-                licenseDevice: 'async-device',
+                app_name: 'async-app',
             };
 
             const module: TestingModule = await Test.createTestingModule({
@@ -225,8 +214,7 @@ describe('ErrorTrackerModule', () => {
         it('should export ErrorTrackerService', async () => {
             const config: ErrorTrackerModuleOptions = {
                 webhookUrl: 'https://api.example.com/webhook',
-                licenseId: 'test-license',
-                licenseDevice: 'test-device',
+                app_name: 'test-app',
             };
 
             const module: TestingModule = await Test.createTestingModule({
@@ -244,8 +232,7 @@ describe('ErrorTrackerModule', () => {
         it('should be available globally', async () => {
             const config: ErrorTrackerModuleOptions = {
                 webhookUrl: 'https://api.example.com/webhook',
-                licenseId: 'test-license',
-                licenseDevice: 'test-device',
+                app_name: 'test-app',
             };
 
             const rootModule = await Test.createTestingModule({
@@ -270,11 +257,8 @@ describe('ErrorTrackerModule', () => {
         it('should accept valid configuration', async () => {
             const config: ErrorTrackerModuleOptions = {
                 webhookUrl: 'https://api.example.com/webhook',
-                licenseId: 'valid-license',
-                licenseDevice: 'valid-device',
-                licenseName: 'Valid License',
-                app: 'test-app',
-                version: '1.0.0',
+                app_name: 'test-app',
+                app_version: '1.0.0',
                 enabled: true,
                 maxRetries: 5,
                 timeout: 15000,
@@ -297,8 +281,7 @@ describe('ErrorTrackerModule', () => {
         it('should work with minimal required configuration', async () => {
             const config: ErrorTrackerModuleOptions = {
                 webhookUrl: 'https://api.example.com/webhook',
-                licenseId: 'min-license',
-                licenseDevice: 'min-device',
+                app_name: 'test-app',
             };
 
             const module: TestingModule = await Test.createTestingModule({
@@ -317,14 +300,12 @@ describe('ErrorTrackerModule', () => {
         it('should support multiple module instances with different configs', async () => {
             const config1: ErrorTrackerModuleOptions = {
                 webhookUrl: 'https://api1.example.com/webhook',
-                licenseId: 'license-1',
-                licenseDevice: 'device-1',
+                app_name: 'app-1',
             };
 
             const config2: ErrorTrackerModuleOptions = {
                 webhookUrl: 'https://api2.example.com/webhook',
-                licenseId: 'license-2',
-                licenseDevice: 'device-2',
+                app_name: 'app-2',
             };
 
             const module1 = await Test.createTestingModule({
@@ -338,8 +319,8 @@ describe('ErrorTrackerModule', () => {
             const options1 = module1.get(ERROR_TRACKER_OPTIONS);
             const options2 = module2.get(ERROR_TRACKER_OPTIONS);
 
-            expect(options1.licenseId).toBe('license-1');
-            expect(options2.licenseId).toBe('license-2');
+            expect(options1.app_name).toBe('app-1');
+            expect(options2.app_name).toBe('app-2');
         });
     });
 });

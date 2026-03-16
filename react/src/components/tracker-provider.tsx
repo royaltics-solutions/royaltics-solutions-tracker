@@ -14,7 +14,6 @@ export const ErrorTrackerProvider = ({
       clientRef.current = Tracker.create({
         ...config,
         platform: 'react',
-        app: 'react-app',
       });
     }
 

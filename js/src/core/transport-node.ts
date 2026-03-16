@@ -16,9 +16,6 @@ export class NodeTransport implements ITransport {
   async send(compressedEvent: string): Promise<void> {
     const payload: TransportPayload = {
       event: compressedEvent,
-      license_id: this.config.licenseId,
-      license_name: this.config.licenseName,
-      license_device: this.config.licenseDevice,
     };
 
     let lastError: Error | null = null;

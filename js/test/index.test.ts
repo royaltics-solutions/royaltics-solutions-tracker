@@ -9,20 +9,23 @@ describe('Tracker', () => {
 
   it('should create default instance', () => {
     const client = Tracker.create({
-      webhookUrl: 'http://localhost:3000/webhook',
-      licenseId: 'test',
-      licenseDevice: 'test'
+      webhookUrl: 'http://localhost:3000/webhook'
     });
 
     expect(client).toBeDefined();
     expect(Tracker.has()).toBe(true);
   });
 
+  it('should allow setting account with positional arguments', () => {
+    Tracker.create({
+      webhookUrl: 'http://localhost:3000/webhook'
+    });
+    expect(() => Tracker.account('LICENSE', '123')).not.toThrow();
+  });
+
   it('should create named instances', () => {
     Tracker.create({
-      webhookUrl: 'http://localhost:3000/webhook',
-      licenseId: 'test',
-      licenseDevice: 'test'
+      webhookUrl: 'http://localhost:3000/webhook'
     }, 'prod');
 
     expect(Tracker.has('prod')).toBe(true);
@@ -31,9 +34,7 @@ describe('Tracker', () => {
 
   it('should track error via static method', () => {
     Tracker.create({
-      webhookUrl: 'http://localhost:3000/webhook',
-      licenseId: 'test',
-      licenseDevice: 'test'
+      webhookUrl: 'http://localhost:3000/webhook'
     });
 
     expect(() => Tracker.error(new Error('Test'))).not.toThrow();
@@ -41,9 +42,7 @@ describe('Tracker', () => {
 
   it('should track event via static method', () => {
     Tracker.create({
-      webhookUrl: 'http://localhost:3000/webhook',
-      licenseId: 'test',
-      licenseDevice: 'test'
+      webhookUrl: 'http://localhost:3000/webhook'
     });
 
     expect(() => Tracker.event('Test event')).not.toThrow();
@@ -56,9 +55,7 @@ describe('Tracker', () => {
 
   it('should pause and resume', () => {
     Tracker.create({
-      webhookUrl: 'http://localhost:3000/webhook',
-      licenseId: 'test',
-      licenseDevice: 'test'
+      webhookUrl: 'http://localhost:3000/webhook'
     });
 
     expect(() => {
@@ -69,9 +66,7 @@ describe('Tracker', () => {
 
   it('should flush events', async () => {
     Tracker.create({
-      webhookUrl: 'http://localhost:3000/webhook',
-      licenseId: 'test',
-      licenseDevice: 'test'
+      webhookUrl: 'http://localhost:3000/webhook'
     });
 
     await expect(Tracker.flush()).resolves.not.toThrow();

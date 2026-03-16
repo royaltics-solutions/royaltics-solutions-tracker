@@ -17,11 +17,8 @@ describe('ErrorTrackerService', () => {
 
     const defaultConfig: ErrorTrackerModuleOptions = {
         webhookUrl: 'https://api.example.com/webhook',
-        licenseId: 'test-license-id',
-        licenseDevice: 'test-device',
-        licenseName: 'Test License',
-        app: 'test-app',
-        version: '1.0.0',
+        app_name: 'test-app',
+        app_version: '1.0.0',
     };
 
     beforeEach(async () => {
@@ -63,8 +60,6 @@ describe('ErrorTrackerService', () => {
             expect(Tracker.create).toHaveBeenCalledWith(
                 expect.objectContaining({
                     webhookUrl: defaultConfig.webhookUrl,
-                    licenseId: defaultConfig.licenseId,
-                    licenseDevice: defaultConfig.licenseDevice,
                     platform: 'nestjs',
                 })
             );
@@ -108,12 +103,45 @@ describe('ErrorTrackerService', () => {
         });
     });
 
+    describe('account()', () => {
+        it('should track account with object', () => {
+            mockClient.account = vi.fn().mockReturnThis();
+            const accountData = { entity: 'LICENSE', entity_id: '123' };
+            
+            const result = service.account(accountData);
+
+            expect(mockClient.account).toHaveBeenCalledWith(accountData, undefined);
+            expect(result).toBe(service);
+        });
+
+        it('should track account with entity and id', () => {
+            mockClient.account = vi.fn().mockReturnThis();
+            
+            const result = service.account('APPDEVICE', 'device-456');
+
+            expect(mockClient.account).toHaveBeenCalledWith('APPDEVICE', 'device-456');
+            expect(result).toBe(service);
+        });
+
+        it('should support chaining account().error()', () => {
+            mockClient.account = vi.fn().mockReturnThis();
+            mockClient.error = vi.fn().mockReturnThis();
+            const error = new Error('Chained error');
+            
+            const result = service.account('SERVICE', 'svc-789').error(error);
+
+            expect(mockClient.account).toHaveBeenCalledWith('SERVICE', 'svc-789');
+            expect(mockClient.error).toHaveBeenCalledWith(error, 'ERROR', undefined);
+            expect(result).toBe(service);
+        });
+    });
+
     describe('error()', () => {
         it('should track errors', () => {
             const error = new Error('Test error');
             const metadata = { userId: '123', action: 'test' };
 
-            service.error(error, 'ERROR', metadata);
+            service.error(error, metadata);
 
             expect(mockClient.error).toHaveBeenCalledWith(error, 'ERROR', metadata);
         });
@@ -123,13 +151,13 @@ describe('ErrorTrackerService', () => {
 
             service.error(error);
 
-            expect(mockClient.error).toHaveBeenCalledWith(error, undefined, undefined);
+            expect(mockClient.error).toHaveBeenCalledWith(error, 'ERROR', undefined);
         });
 
-        it('should track errors with custom level', () => {
+        it('should track errors as fatal using fatal()', () => {
             const error = new Error('Fatal error');
 
-            service.error(error, 'FATAL');
+            service.fatal(error);
 
             expect(mockClient.error).toHaveBeenCalledWith(error, 'FATAL', undefined);
         });
@@ -137,7 +165,7 @@ describe('ErrorTrackerService', () => {
         it('should handle error objects', () => {
             const errorObj = { code: 'ERR_001', message: 'Custom error' };
 
-            service.error(errorObj, 'ERROR');
+            service.error(errorObj);
 
             expect(mockClient.error).toHaveBeenCalledWith(errorObj, 'ERROR', undefined);
         });
@@ -153,12 +181,12 @@ describe('ErrorTrackerService', () => {
             const error1 = new Error('Error 1');
             const error2 = new Error('Error 2');
 
-            service.error(error1, 'ERROR');
-            service.error(error2, 'WARNING');
+            service.error(error1);
+            service.fatal(error2);
 
             expect(mockClient.error).toHaveBeenCalledTimes(2);
             expect(mockClient.error).toHaveBeenNthCalledWith(1, error1, 'ERROR', undefined);
-            expect(mockClient.error).toHaveBeenNthCalledWith(2, error2, 'WARNING', undefined);
+            expect(mockClient.error).toHaveBeenNthCalledWith(2, error2, 'FATAL', undefined);
         });
     });
 
@@ -262,9 +290,9 @@ describe('ErrorTrackerService', () => {
             const error = new Error('Chained error');
 
             const result = service
-                .error(error, 'ERROR')
+                .error(error)
                 .event('After error', 'INFO')
-                .error(new Error('Another error'), 'WARNING');
+                .fatal(new Error('Another error'));
 
             expect(result).toBe(service);
             expect(mockClient.error).toHaveBeenCalledTimes(2);

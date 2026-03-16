@@ -47,26 +47,52 @@ module.exports = function TrackerHook(sails: SailsHookContext['sails']) {
                     return cb();
                 }
 
-                sails.tracker = {
-                    error: (error: Error | Record<string, unknown>, metadata?: Record<string, unknown>) =>
-                        client!.error(error, 'ERROR', metadata),
-                    fatal: (error: Error | Record<string, unknown>, metadata?: Record<string, unknown>) =>
-                        client!.error(error, 'FATAL', metadata),
-                    debug: (error: Error | Record<string, unknown>, metadata?: Record<string, unknown>) =>
-                        client!.error(error, 'DEBUG', metadata),
-                    capture: (error: Error | Record<string, unknown>, metadata?: Record<string, unknown>) =>
-                        client!.error(error, 'ERROR', metadata),
-                    info: (title: string, metadata?: Record<string, unknown>) =>
-                        client!.event(title, 'INFO', metadata),
-                    warn: (title: string, metadata?: Record<string, unknown>) =>
-                        client!.event(title, 'WARNING', metadata),
-                    event: (title: string, level?: any, metadata?: Record<string, unknown>) =>
-                        client!.event(title, level, metadata),
+                const tracker: SailsTrackerClient = {
+                    account: (accountOrEntity: any, entity_id?: string) => {
+                        client!.account(accountOrEntity, entity_id!);
+                        return tracker;
+                    },
+                    error: (error: Error | Record<string, unknown>, metadata?: Record<string, unknown>) => {
+                        client!.error(error, 'ERROR', metadata);
+                        return tracker;
+                    },
+                    fatal: (error: Error | Record<string, unknown>, metadata?: Record<string, unknown>) => {
+                        client!.error(error, 'FATAL', metadata);
+                        return tracker;
+                    },
+                    debug: (error: Error | Record<string, unknown>, metadata?: Record<string, unknown>) => {
+                        client!.error(error, 'DEBUG', metadata);
+                        return tracker;
+                    },
+                    capture: (error: Error | Record<string, unknown>, metadata?: Record<string, unknown>) => {
+                        client!.error(error, 'ERROR', metadata);
+                        return tracker;
+                    },
+                    info: (title: string, metadata?: Record<string, unknown>) => {
+                        client!.event(title, 'INFO', metadata);
+                        return tracker;
+                    },
+                    warn: (title: string, metadata?: Record<string, unknown>) => {
+                        client!.event(title, 'WARNING', metadata);
+                        return tracker;
+                    },
+                    event: (title: string, level?: any, metadata?: Record<string, unknown>) => {
+                        client!.event(title, level, metadata);
+                        return tracker;
+                    },
                     flush: async () => await client!.forceFlush(),
-                    pause: () => client!.pause(),
-                    resume: () => client!.resume(),
+                    pause: () => {
+                        client!.pause();
+                        return tracker;
+                    },
+                    resume: () => {
+                        client!.resume();
+                        return tracker;
+                    },
                     shutdown: () => client!.shutdown(),
                 };
+
+                sails.tracker = tracker;
 
 
                 process.on('unhandledRejection', function (reason: any) {

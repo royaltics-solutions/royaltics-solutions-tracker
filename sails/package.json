@@ -1,6 +1,6 @@
 {
     "name": "@royaltics/tracker-sails",
-    "version": "0.0.25",
+    "version": "0.0.26",
     "description": "Sails.js hook for Royaltics Error Tracker",
     "type": "module",
     "main": "./dist/index.cjs",
@@ -47,9 +47,6 @@
     "peerDependencies": {
         "sails": "^1.0.0"
     },
-    "dependencies": {
-        "@royaltics/tracker": "^0.0.20"
-    },
     "devDependencies": {
         "@types/node": "^20.19.27",
         "@vitest/coverage-v8": "^1.6.1",
@@ -58,5 +55,8 @@
         "vite-plugin-dts": "^3.9.1",
         "vitest": "^1.6.1"
     },
-    "pnpm": {}
+    "pnpm": {},
+    "dependencies": {
+        "@royaltics/tracker": "^0.0.21"
+    }
 }

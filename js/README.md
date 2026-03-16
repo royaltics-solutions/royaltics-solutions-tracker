@@ -36,11 +36,21 @@ import Tracker from '@royaltics/tracker';
 
 const tracker = Tracker.create({
   webhookUrl: 'https://api.example.com/webhook',
-  licenseId: 'your-license-id',
-  licenseDevice: 'server-01',
-  app: 'my-app',
-  version: '1.0.0'
+  app_name: 'my-app',
+  app_version: '1.0.0'
 });
+
+// Set account using an object
+Tracker.account({
+  entity: 'LICENSE',
+  entity_id: 'your-license-id'
+});
+
+// Alternative: set account using positional arguments
+Tracker.account('LICENSE', 'your-license-id');
+
+// Chaining is also supported
+Tracker.account('USER', '456').info('User action after account set');
 ```
 
 ### Tracking Errors
@@ -98,10 +108,9 @@ await tracker.flush();
 The following configuration options are available:
 
 * `webhookUrl`: The URL of the webhook to send error reports to.
-* `licenseId`: Your license ID.
-* `licenseDevice`: The device ID for your license.
-* `app`: The name of your application.
-* `version`: The version of your application.
+* `app_name`: The name of your application.
+* `app_version`: The version of your application.
+* `debug`: (Optional) Enable debug logging.
 
 
 
@@ -119,11 +128,11 @@ app.use(express.json());
 
 app.post('/webhook', (req, res) => {
   try {
-    const { event, license_id, license_name, license_device } = req.body;
+    const { event } = req.body;
     
     // Validate payload
-    if (!event || !license_id || !license_device) {
-      return res.status(400).json({ error: 'Missing required fields' });
+    if (!event) {
+      return res.status(400).json({ error: 'Missing event field' });
     }
     
     // Decode and decompress event
@@ -137,11 +146,7 @@ app.post('/webhook', (req, res) => {
       title: eventData.title,
       level: eventData.level,
       timestamp: eventData.timestamp,
-      license: {
-        id: license_id,
-        name: license_name,
-        device: license_device
-      },
+      account: eventData.account,
       error: {
         name: eventData.event.name,
         message: eventData.event.message,
@@ -191,14 +196,18 @@ The decompressed event has the following structure:
     name: string;          // Error class name
     message: string;       // Error message
     stack: string;         // Stack trace
-    extra: object | null;  // Additional error data
+    [key: string]: any;    // Additional error data
   },
+  account: {               // Optional persistent account
+    entity: string;
+    entity_id: string;
+  } | null,
   context: {
     culprit: string;       // Function/method that threw
     extra: object | null;  // Custom metadata
     platform: string;      // OS platform
-    app: string | null;    // App name
-    version: string | null;// App version
+    app_name: string | null;    // App name
+    app_version: string | null; // App version
     device: string;        // Device identifier
     tags: string[];        // Auto-generated tags
   }

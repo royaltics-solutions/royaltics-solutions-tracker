@@ -80,11 +80,9 @@ import Tracker from '@royaltics/tracker';
 
 // Initialize
 Tracker.create({
-  webhookUrl: 'https://api.example.com/webhook',
-  licenseId: 'your-license-id',
-  licenseDevice: 'server-01',
-  app: 'my-app',
-  version: '1.0.0'
+  webhookUrl: 'https://api.example.com/webhook/issues/:app_id/events',
+  app_name: 'my-app',
+  app_version: '1.0.0'
 });
 
 // Track errors

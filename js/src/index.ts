@@ -10,9 +10,10 @@ export type {
   ITransport,
   IEventBuilder,
   IErrorTrackerClient,
+  AccountService,
 } from './types';
 import { ErrorTrackerClient } from './core/client';
-import type { ClientConfig, EventLevel } from './types';
+import type { ClientConfig, EventLevel, AccountService } from './types';
 
 class TrackerRegistry {
   private readonly instances: Map<string, ErrorTrackerClient> = new Map();
@@ -108,7 +109,8 @@ export const Tracker = {
     metadata?: Record<string, unknown>
   ): ErrorTrackerClient => registry.get().event(title, level, metadata),
 
-
+  account: (accountOrEntity: AccountService | string, entity_id?: string): ErrorTrackerClient =>
+    registry.get().account(accountOrEntity as any, entity_id as any),
 
   flush: async (): Promise<void> => {
     await registry.get().forceFlush();

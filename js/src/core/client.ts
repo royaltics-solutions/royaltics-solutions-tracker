@@ -4,6 +4,7 @@ import type {
   ClientConfig,
   EventLevel,
   IErrorTrackerClient,
+  AccountService,
 } from '../types';
 import { EventBuilder } from './event-builder';
 import { Transport } from './transport';
@@ -37,10 +38,10 @@ export class ErrorTrackerClient implements IErrorTrackerClient {
     this.maxQueueSize = sanitizedConfig.maxQueueSize ?? DEFAULT_MAX_QUEUE_SIZE;
 
     this.eventBuilder = new EventBuilder({
-      app: sanitizedConfig.app,
-      version: sanitizedConfig.version,
+      app_name: sanitizedConfig.app_name,
+      app_version: sanitizedConfig.app_version,
       platform: sanitizedConfig.platform,
-      device: sanitizedConfig.licenseDevice,
+      device: sanitizedConfig.device,
     });
 
     this.transport = new Transport(sanitizedConfig);
@@ -54,6 +55,17 @@ export class ErrorTrackerClient implements IErrorTrackerClient {
     this.attachErrorHandlers();
     this.startBatchProcessor();
     this.isActive = true;
+    return this;
+  }
+
+  account(account: AccountService): this;
+  account(entity: string, entity_id: string): this;
+  account(accountOrEntity: AccountService | string, entity_id?: string): this {
+    if (typeof accountOrEntity === 'string') {
+      this.eventBuilder.account(accountOrEntity, entity_id as string);
+    } else {
+      this.eventBuilder.account(accountOrEntity);
+    }
     return this;
   }
 

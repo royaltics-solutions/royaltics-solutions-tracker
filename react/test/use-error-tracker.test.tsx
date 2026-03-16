@@ -17,8 +17,6 @@ describe('useErrorTracker', () => {
   let mockClient: any;
   const defaultConfig: Omit<ClientConfig, 'platform' | 'app'> = {
     webhookUrl: 'https://api.example.com/webhook',
-    licenseId: 'test-license-id',
-    licenseDevice: 'test-device',
   };
 
   beforeEach(() => {

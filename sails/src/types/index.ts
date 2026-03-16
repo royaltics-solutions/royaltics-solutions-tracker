@@ -1,39 +1,42 @@
-import type { ClientConfig, ErrorTrackerClient, EventLevel } from '@royaltics/tracker';
+import type { ClientConfig, ErrorTrackerClient, EventLevel, AccountService } from '@royaltics/tracker';
 
 export interface SailsTrackerClient {
+  readonly account: {
+    (account: AccountService): SailsTrackerClient;
+    (entity: string, entity_id: string): SailsTrackerClient;
+  };
   readonly error: (
     error: Error | Record<string, unknown>,
     metadata?: Record<string, unknown>
-  ) => ErrorTrackerClient;
+  ) => SailsTrackerClient;
   readonly fatal: (
     error: Error | Record<string, unknown>,
     metadata?: Record<string, unknown>
-  ) => ErrorTrackerClient;
+  ) => SailsTrackerClient;
   readonly debug: (
     error: Error | Record<string, unknown>,
     metadata?: Record<string, unknown>
-  ) => ErrorTrackerClient;
+  ) => SailsTrackerClient;
   readonly capture: (
     error: Error | Record<string, unknown>,
-    level?: EventLevel,
     metadata?: Record<string, unknown>
-  ) => ErrorTrackerClient;
+  ) => SailsTrackerClient;
   readonly info: (
     title: string,
     metadata?: Record<string, unknown>
-  ) => ErrorTrackerClient;
+  ) => SailsTrackerClient;
   readonly warn: (
     title: string,
     metadata?: Record<string, unknown>
-  ) => ErrorTrackerClient;
+  ) => SailsTrackerClient;
   readonly event: (
     title: string,
     level?: EventLevel,
     metadata?: Record<string, unknown>
-  ) => ErrorTrackerClient;
+  ) => SailsTrackerClient;
   readonly flush: () => Promise<void>;
-  readonly pause: () => ErrorTrackerClient;
-  readonly resume: () => ErrorTrackerClient;
+  readonly pause: () => SailsTrackerClient;
+  readonly resume: () => SailsTrackerClient;
   readonly shutdown: () => void;
 }
 
@@ -56,7 +59,7 @@ export interface SailsHookContext {
       info: (message: string, ...args: unknown[]) => void;
     };
     on?: (event: string, handler: (...args: any[]) => void) => void;
-    tracker?: Omit<SailsTrackerClient, 'capture'> & { capture: (error: Error | Record<string, unknown>, metadata?: Record<string, unknown>) => ErrorTrackerClient };
+    tracker?: SailsTrackerClient;
   };
 }
 

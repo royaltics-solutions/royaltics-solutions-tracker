@@ -1,10 +1,11 @@
 import { Component, type ReactNode, type ErrorInfo } from 'react';
-import type { ErrorTrackerClient } from '@royaltics/tracker';
+import type { ErrorTrackerClient, AccountService } from '@royaltics/tracker';
 import { ErrorTrackerContext } from '../context/tracker-context';
 
-interface ErrorBoundaryProps {
+export interface ErrorBoundaryProps {
   readonly fallback?: ReactNode | ((error: Error) => ReactNode);
   readonly children: ReactNode;
+  readonly account?: AccountService;
 }
 
 interface ErrorBoundaryState {
@@ -35,6 +36,10 @@ export class ErrorBoundary extends Component<ErrorBoundaryProps, ErrorBoundarySt
         : new Error(String(error ?? 'Unknown error'));
 
       if (this.context) {
+        if (this.props.account) {
+          this.context.account(this.props.account);
+        }
+
         this.context.error(normalizedError, 'ERROR', {
           componentStack: errorInfo.componentStack,
           source: 'ErrorBoundary',

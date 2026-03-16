@@ -33,10 +33,8 @@ function App() {
     <ErrorTrackerProvider
       config={{
         webhookUrl: 'https://api.example.com/webhook',
-        licenseId: 'your-license-id',
-        licenseDevice: 'browser-client',
-        app: 'my-react-app',
-        version: '1.0.0'
+        app_name: 'my-react-app',
+        app_version: '1.0.0'
       }}
     >
       <YourApp />
@@ -51,12 +49,15 @@ function App() {
 import { useErrorTracker } from '@royaltics/tracker-react';
 
 function MyComponent() {
-  const { error, event } = useErrorTracker();
+  const { error, event, account } = useErrorTracker();
 
   const handleClick = async () => {
     try {
       await someAsyncOperation();
       event('Button clicked', 'INFO', { buttonId: 'submit' });
+      
+      // Set account persistently
+      account('USER', 'user-123');
     } catch (err) {
       error(err, { action: 'handleClick' });
     }
@@ -80,10 +81,8 @@ function App() {
     <ErrorTrackerProvider
       config={{
         webhookUrl: process.env.REACT_APP_ERROR_TRACKER_URL,
-        licenseId: process.env.REACT_APP_LICENSE_ID,
-        licenseDevice: 'web-app',
-        app: 'my-app',
-        version: '1.0.0',
+        app_name: 'my-app',
+        app_version: '1.0.0',
         enabled: process.env.NODE_ENV === 'production'
       }}
     >
@@ -137,6 +136,7 @@ Catch React component errors and report them to the tracker.
 |------|------|----------|-------------|
 | `fallback` | `ReactNode \| ((err: Error) => ReactNode)` | No | UI to display when an error is caught. |
 | `children` | `ReactNode` | Yes | The component tree to monitor. |
+| `account` | `AccountService` | No | Overwrite or set the account for errors caught by this boundary. |
 
 > [!IMPORTANT]
 > `ErrorBoundary` must be placed inside an `ErrorTrackerProvider`. It automatically uses the client provided by the context to report errors.
@@ -148,6 +148,7 @@ function App() {
   return (
     <ErrorTrackerProvider config={config}>
       <ErrorBoundary
+        account={{ entity: 'LICENSE', entity_id: '123' }}
         fallback={(error) => (
           <div style={{ padding: '20px' }}>
             <h1>Something went wrong</h1>
@@ -170,7 +171,10 @@ Create error boundaries programmatically:
 import { useErrorBoundary } from '@royaltics/tracker-react';
 
 function MyComponent() {
-  const { ErrorBoundary } = useErrorBoundary();
+  const { ErrorBoundary, account } = useErrorBoundary();
+
+  // You can set account here too
+  // account('USER', '456');
 
   return (
     <ErrorBoundary
@@ -190,11 +194,8 @@ function MyComponent() {
 interface ErrorTrackerProviderProps {
   config: {
     webhookUrl: string;
-    licenseId: string;
-    licenseDevice: string;
-    licenseName?: string;
-    app?: string;
-    version?: string;
+    app_name?: string;
+    app_version?: string;
     enabled?: boolean;
     maxRetries?: number;
     timeout?: number;
@@ -230,6 +231,10 @@ interface UseErrorTrackerReturn {
   warn: (title: string, meta?: Record<string, unknown>) => void;
   event: (title: string, level?: EventLevel, meta?: Record<string, unknown>) => void;
 
+  // Account context
+  account: (entity: string, entity_id: string) => ErrorTrackerClient;
+  account: (account: AccountService) => ErrorTrackerClient;
+
   // Utils
   flush: () => Promise<void>;
 }
@@ -247,7 +252,7 @@ type EventLevel = 'DEBUG' | 'INFO' | 'WARNING' | 'ERROR' | 'FATAL';
 
 ```tsx
 function LoginForm() {
-  const { error, info } = useErrorTracker();
+  const { error, info, account } = useErrorTracker();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -337,10 +342,8 @@ function App() {
 ```tsx
 const config = {
   webhookUrl: process.env.REACT_APP_ERROR_TRACKER_URL!,
-  licenseId: process.env.REACT_APP_LICENSE_ID!,
-  licenseDevice: 'web-client',
-  app: 'my-app',
-  version: process.env.REACT_APP_VERSION || '1.0.0',
+  app_name: 'my-app',
+  app_version: process.env.REACT_APP_VERSION || '1.0.0',
   enabled: process.env.NODE_ENV === 'production',
   headers: {
     'X-App-Environment': process.env.NODE_ENV

@@ -3,23 +3,39 @@ import type {
   EventLevel,
   SerializedError,
   IEventBuilder,
+  AccountService,
 } from '../types';
 import { safeStringify } from '../utils/json';
 import { generateUUID } from '../utils/uuid';
 import { isBrowser } from '../utils/environment';
 
 interface EventBuilderConfig {
-  readonly app?: string;
-  readonly version?: string;
+  readonly app_name?: string;
+  readonly app_version?: string;
   readonly platform?: string;
   readonly device?: string;
 }
 
 export class EventBuilder implements IEventBuilder {
   private readonly config: EventBuilderConfig;
+  private _account?: AccountService;
 
   constructor(config: EventBuilderConfig) {
     this.config = config;
+  }
+
+  account(account: AccountService): this;
+  account(entity: string, entity_id: string): this;
+  account(accountOrEntity: AccountService | string, entity_id?: string): this {
+    if (typeof accountOrEntity === 'string') {
+      this._account = {
+        entity: accountOrEntity,
+        entity_id,
+      };
+    } else {
+      this._account = accountOrEntity;
+    }
+    return this;
   }
 
   build(
@@ -39,12 +55,13 @@ export class EventBuilder implements IEventBuilder {
       level,
       event: this.serializeError(error),
       timestamp: new Date().toISOString(),
+      account: this._account,
       context: {
         culprit,
         extra,
         platform,
-        app: this.config.app,
-        version: this.config.version,
+        app_name: this.config.app_name,
+        app_version: this.config.app_version,
         device,
         tags: this.extractTags(error),
       },

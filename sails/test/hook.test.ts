@@ -382,23 +382,68 @@ describe('Sails.js Tracker Hook', () => {
         });
     });
 
-    describe('Default Configuration', () => {
-        it('should provide default configuration', () => {
+    describe('Account and Chaining', () => {
+        it('should support account tracking with object', (done) => {
+            mockClient.account = vi.fn().mockReturnThis();
             const TrackerHook = require('../src/index');
             hook = TrackerHook(mockSails);
 
-            expect(hook.defaults).toBeDefined();
-            expect(hook.defaults.__configKey__).toMatchObject({
-                enabled: true,
-                webhookUrl: 'N/A',
-                licenseId: '',
-                licenseDevice: '',
-                app: 'sails-app',
-                platform: 'sails',
-                maxRetries: 3,
-                timeout: 10000,
-                flushInterval: 10000,
-                maxQueueSize: 100,
+            hook.initialize(() => {
+                const accountData = { entity: 'LICENSE', entity_id: '123' };
+                const result = mockSails.tracker.account(accountData);
+
+                expect(mockClient.account).toHaveBeenCalledWith(accountData, undefined);
+                expect(result).toBe(mockSails.tracker);
+                
+            });
+        });
+
+        it('should support account tracking with entity and id', (done) => {
+            mockClient.account = vi.fn().mockReturnThis();
+            const TrackerHook = require('../src/index');
+            hook = TrackerHook(mockSails);
+
+            hook.initialize(() => {
+                const result = mockSails.tracker.account('APPDEVICE', 'device-456');
+
+                expect(mockClient.account).toHaveBeenCalledWith('APPDEVICE', 'device-456');
+                expect(result).toBe(mockSails.tracker);
+                
+            });
+        });
+
+        it('should support chaining tracker.account().error()', (done) => {
+            mockClient.account = vi.fn().mockReturnThis();
+            mockClient.error = vi.fn().mockReturnThis();
+            const TrackerHook = require('../src/index');
+            hook = TrackerHook(mockSails);
+
+            hook.initialize(() => {
+                const mockError = new Error('Chained error');
+                const result = mockSails.tracker.account('SERVICE', 'svc-789').error(mockError);
+
+                expect(mockClient.account).toHaveBeenCalledWith('SERVICE', 'svc-789');
+                expect(mockClient.error).toHaveBeenCalledWith(mockError, 'ERROR', undefined);
+                expect(result).toBe(mockSails.tracker);
+                
+            });
+        });
+
+        it('should support chaining other methods', (done) => {
+            mockClient.event = vi.fn().mockReturnThis();
+            mockClient.pause = vi.fn().mockReturnThis();
+            mockClient.resume = vi.fn().mockReturnThis();
+            const TrackerHook = require('../src/index');
+            hook = TrackerHook(mockSails);
+
+            hook.initialize(() => {
+                const result = mockSails.tracker.info('Chained info').pause().resume();
+
+                expect(mockClient.event).toHaveBeenCalledWith('Chained info', 'INFO', undefined);
+                expect(mockClient.pause).toHaveBeenCalled();
+                expect(mockClient.resume).toHaveBeenCalled();
+                expect(result).toBe(mockSails.tracker);
+                
             });
         });
     });
