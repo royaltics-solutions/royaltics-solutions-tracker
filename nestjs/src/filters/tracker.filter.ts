@@ -15,6 +15,16 @@ export class ErrorTrackerFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse();
     const request = ctx.getRequest();
+    const url = request.url;
+
+    if (this.errorTracker.shouldIgnoreRoute(url)) {
+      return response.status(exception instanceof HttpException ? exception.getStatus() : 500).json({
+        statusCode: exception instanceof HttpException ? exception.getStatus() : 500,
+        timestamp: new Date().toISOString(),
+        path: url,
+        message: exception instanceof HttpException ? exception.message : 'Internal server error',
+      });
+    }
 
     const isHttpException = exception instanceof HttpException;
     const status = isHttpException

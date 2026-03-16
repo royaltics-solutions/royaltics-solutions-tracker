@@ -17,6 +17,10 @@ export class ErrorTrackerInterceptor implements NestInterceptor {
     const request = context.switchToHttp().getRequest();
     const { method, url, ip, headers } = request;
 
+    if (this.errorTracker.shouldIgnoreRoute(url)) {
+      return next.handle();
+    }
+
     const requestMetadata = {
       method,
       url,

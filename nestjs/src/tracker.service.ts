@@ -99,6 +99,19 @@ export class ErrorTrackerService implements OnModuleDestroy {
     return this;
   }
 
+  shouldIgnoreRoute(url: string): boolean {
+    if (!this.options.ignoredRoutes?.length || !url) {
+      return false;
+    }
+
+    return this.options.ignoredRoutes.some((route) => {
+      if (url === route) return true;
+      if (route.endsWith('/') && url.startsWith(route)) return true;
+      if (url.startsWith(`${route}/`)) return true;
+      return false;
+    });
+  }
+
   onModuleDestroy(): void {
     this.client.shutdown();
   }
