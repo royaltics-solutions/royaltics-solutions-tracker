@@ -3,7 +3,7 @@ import type { ReactNode } from 'react';
 import type { ErrorBoundary } from '../components/error-boundary';
 
 export interface ErrorTrackerProviderProps {
-  readonly config: Omit<ClientConfig, 'platform' | 'app_name'>;
+  readonly config: Omit<ClientConfig, 'platform'>;
   readonly children: ReactNode;
   readonly fallback?: ReactNode | ((error: Error) => ReactNode);
 }
