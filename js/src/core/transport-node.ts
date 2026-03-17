@@ -52,7 +52,7 @@ export class NodeTransport implements ITransport {
         headers: {
           'Content-Type': 'application/json',
           'Content-Length': Buffer.byteLength(data).toString(),
-          'User-Agent': 'Royaltics-ErrorTracker/1.0',
+          'User-Agent': 'Royaltics-ErrorTracker-Node/1.0',
           ...(this.config.headers ?? {}),
         },
         timeout: this.timeout,

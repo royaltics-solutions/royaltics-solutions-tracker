@@ -44,7 +44,7 @@ export class BrowserTransport implements ITransport {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'User-Agent': 'Royaltics-ErrorTracker/1.0',
+          'User-Agent': 'Royaltics-ErrorTracker-Browser/1.0',
           ...(this.config.headers ?? {}),
         },
         body: JSON.stringify(payload),
