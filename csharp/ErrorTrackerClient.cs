@@ -13,6 +13,7 @@ public sealed class ErrorTrackerClient : IDisposable
     private readonly ConcurrentQueue<EventIssue> _eventQueue;
     private readonly CancellationTokenSource _cancellationTokenSource;
     private readonly SemaphoreSlim _processingLock;
+    private readonly ConcurrentDictionary<string, long> _fingerprintCache;
     
     private bool _isActive;
     private bool _isEnabled;
@@ -28,6 +29,7 @@ public sealed class ErrorTrackerClient : IDisposable
         _eventQueue = new ConcurrentQueue<EventIssue>();
         _cancellationTokenSource = new CancellationTokenSource();
         _processingLock = new SemaphoreSlim(1, 1);
+        _fingerprintCache = new ConcurrentDictionary<string, long>();
 
         _eventBuilder = new EventBuilder(
             config.App,
@@ -45,7 +47,7 @@ public sealed class ErrorTrackerClient : IDisposable
             return this;
 
         AttachErrorHandlers();
-        StartBatchProcessor();
+        StartQueueProcessor();
         _isActive = true;
 
         return this;
@@ -63,6 +65,10 @@ public sealed class ErrorTrackerClient : IDisposable
         {
             var title = error.Message ?? "Unknown error";
             var eventIssue = _eventBuilder.Build(title, error, level, metadata);
+            
+            if (IsDuplicate(eventIssue))
+                return this;
+
             Enqueue(eventIssue);
         }
         catch (Exception ex)
@@ -85,6 +91,10 @@ public sealed class ErrorTrackerClient : IDisposable
         {
             var error = new Exception(title);
             var eventIssue = _eventBuilder.Build(title, error, level, metadata);
+
+            if (IsDuplicate(eventIssue))
+                return this;
+
             Enqueue(eventIssue);
         }
         catch (Exception ex)
@@ -95,11 +105,48 @@ public sealed class ErrorTrackerClient : IDisposable
         return this;
     }
 
+    private bool IsDuplicate(EventIssue eventIssue)
+    {
+        if (!_config.Deduplicate) return false;
+
+        var fingerprint = GenerateFingerprint(eventIssue);
+        var now = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
+
+        if (_fingerprintCache.TryGetValue(fingerprint, out var lastSeen) && 
+            (now - lastSeen) < _config.DeduplicationInterval)
+        {
+            return true;
+        }
+
+        _fingerprintCache[fingerprint] = now;
+
+        // Optional: cleanup old entries
+        if (_fingerprintCache.Count > 1000)
+        {
+            foreach (var key in _fingerprintCache.Keys)
+            {
+                if (_fingerprintCache.TryGetValue(key, out var time) && now - time > _config.DeduplicationInterval)
+                {
+                    _fingerprintCache.TryRemove(key, out _);
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private string GenerateFingerprint(EventIssue eventIssue)
+    {
+        var culprit = eventIssue.Context.Culprit ?? "unknown";
+        var message = eventIssue.Event.Message ?? "";
+        return $"{eventIssue.Title}:{message}:{culprit}";
+    }
+
     public async Task ForceFlushAsync()
     {
         while (!_eventQueue.IsEmpty)
         {
-            await ProcessBatchAsync();
+            await ProcessQueueAsync();
         }
     }
 
@@ -158,7 +205,7 @@ public sealed class ErrorTrackerClient : IDisposable
         };
     }
 
-    private void StartBatchProcessor()
+    private void StartQueueProcessor()
     {
         _flushTask = Task.Run(async () =>
         {
@@ -167,7 +214,7 @@ public sealed class ErrorTrackerClient : IDisposable
                 try
                 {
                     await Task.Delay(_config.FlushInterval, _cancellationTokenSource.Token);
-                    await ProcessBatchAsync();
+                    await ProcessQueueAsync();
                 }
                 catch (OperationCanceledException)
                 {
@@ -175,7 +222,7 @@ public sealed class ErrorTrackerClient : IDisposable
                 }
                 catch (Exception ex)
                 {
-                    HandleInternalError("Batch processing failed", ex);
+                    HandleInternalError("Queue processing failed", ex);
                 }
             }
         }, _cancellationTokenSource.Token);
@@ -187,11 +234,11 @@ public sealed class ErrorTrackerClient : IDisposable
 
         if (_eventQueue.Count >= _config.MaxQueueSize)
         {
-            _ = Task.Run(ProcessBatchAsync);
+            _ = Task.Run(ProcessQueueAsync);
         }
     }
 
-    private async Task ProcessBatchAsync()
+    private async Task ProcessQueueAsync()
     {
         if (_eventQueue.IsEmpty || _isProcessing)
             return;
@@ -202,16 +249,40 @@ public sealed class ErrorTrackerClient : IDisposable
         {
             _isProcessing = true;
 
-            var batch = new List<EventIssue>();
-            var batchSize = Math.Min(_config.MaxQueueSize, _eventQueue.Count);
-
-            for (var i = 0; i < batchSize && _eventQueue.TryDequeue(out var eventIssue); i++)
+            while (_eventQueue.TryDequeue(out var eventIssue))
             {
-                batch.Add(eventIssue);
-            }
+                var success = false;
+                Exception? lastError = null;
 
-            var tasks = batch.Select(DispatchEventAsync);
-            await Task.WhenAll(tasks);
+                // Try up to MaxRetries + 1 (initial + retries)
+                for (var attempt = 0; attempt <= _config.MaxRetries; attempt++)
+                {
+                    try
+                    {
+                        await DispatchEventAsync(eventIssue);
+                        success = true;
+                        break;
+                    }
+                    catch (Exception ex)
+                    {
+                        lastError = ex;
+                        if (attempt < _config.MaxRetries)
+                        {
+                            await Task.Delay(_config.ThrottleInterval, _cancellationTokenSource.Token);
+                        }
+                    }
+                }
+
+                if (!success)
+                {
+                    Console.Error.WriteLine($"[ErrorTracker] Failed to dispatch event after {_config.MaxRetries + 1} attempts. Event: \"{eventIssue.Title}\". Reason: {lastError?.Message}. This event will be ignored to prevent queue congestion.");
+                }
+
+                if (!_eventQueue.IsEmpty)
+                {
+                    await Task.Delay(_config.ThrottleInterval, _cancellationTokenSource.Token);
+                }
+            }
         }
         finally
         {
@@ -222,16 +293,9 @@ public sealed class ErrorTrackerClient : IDisposable
 
     private async Task DispatchEventAsync(EventIssue eventIssue)
     {
-        try
-        {
-            var eventString = _eventBuilder.Stringify(eventIssue);
-            var compressed = Compression.CompressAndEncode(eventString);
-            await _transport.SendAsync(compressed, _cancellationTokenSource.Token);
-        }
-        catch (Exception ex)
-        {
-            HandleInternalError("Failed to dispatch event", ex);
-        }
+        var eventString = _eventBuilder.Stringify(eventIssue);
+        var compressed = Compression.CompressAndEncode(eventString);
+        await _transport.SendAsync(compressed, _cancellationTokenSource.Token);
     }
 
     private static void HandleInternalError(string context, Exception error)

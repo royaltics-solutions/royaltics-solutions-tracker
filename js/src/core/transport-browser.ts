@@ -1,14 +1,12 @@
 import type { TransportPayload, ClientConfig, ITransport } from '../types';
-import { DEFAULT_MAX_RETRIES, DEFAULT_TIMEOUT } from '../constants';
+import { DEFAULT_TIMEOUT } from '../constants';
 
 export class BrowserTransport implements ITransport {
   private readonly config: ClientConfig;
-  private readonly maxRetries: number;
   private readonly timeout: number;
 
   constructor(config: ClientConfig) {
     this.config = config;
-    this.maxRetries = config.maxRetries ?? DEFAULT_MAX_RETRIES;
     this.timeout = config.timeout ?? DEFAULT_TIMEOUT;
   }
 
@@ -17,22 +15,7 @@ export class BrowserTransport implements ITransport {
       event: compressedEvent,
     };
 
-    let lastError: Error | null = null;
-
-    for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
-      try {
-        await this.makeRequest(payload);
-        return;
-      } catch (error) {
-        lastError = error instanceof Error ? error : new Error(String(error));
-
-        if (attempt < this.maxRetries) {
-          await this.delay(this.calculateBackoff(attempt));
-        }
-      }
-    }
-
-    throw lastError ?? new Error('Transport failed with unknown error');
+    await this.makeRequest(payload);
   }
 
   private async makeRequest(payload: TransportPayload): Promise<void> {
@@ -68,18 +51,5 @@ export class BrowserTransport implements ITransport {
       
       throw error;
     }
-  }
-
-  private calculateBackoff(attempt: number): number {
-    const baseDelay = 1000;
-    const maxDelay = 30000;
-    const delay = Math.min(baseDelay * Math.pow(2, attempt), maxDelay);
-    return delay;
-  }
-
-  private delay(ms: number): Promise<void> {
-    return new Promise((resolve) => {
-      setTimeout(resolve, ms);
-    });
   }
 }

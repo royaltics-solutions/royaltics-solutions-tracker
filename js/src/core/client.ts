@@ -14,6 +14,10 @@ import {
   DEFAULT_ENABLED,
   DEFAULT_FLUSH_INTERVAL,
   DEFAULT_MAX_QUEUE_SIZE,
+  DEFAULT_THROTTLE_INTERVAL,
+  DEFAULT_DEDUPLICATION_INTERVAL,
+  DEFAULT_DEDUPLICATE,
+  DEFAULT_MAX_RETRIES,
 } from '../constants';
 
 export class ErrorTrackerClient implements IErrorTrackerClient {
@@ -22,11 +26,17 @@ export class ErrorTrackerClient implements IErrorTrackerClient {
   private readonly transport: Transport;
   private readonly flushInterval: number;
   private readonly maxQueueSize: number;
+  private readonly throttleInterval: number;
+  private readonly deduplicationInterval: number;
+  private readonly deduplicate: boolean;
+  private readonly maxRetries: number;
+  
   private isActive = false;
   private isEnabled: boolean;
   private eventQueue: EventIssueInterface[] = [];
   private flushTimer?: NodeJS.Timeout;
   private isProcessing = false;
+  private fingerprintCache = new Map<string, number>();
 
   constructor(config: Partial<ClientConfig>) {
     ConfigValidator.validate(config);
@@ -36,6 +46,10 @@ export class ErrorTrackerClient implements IErrorTrackerClient {
     this.isEnabled = sanitizedConfig.enabled ?? DEFAULT_ENABLED;
     this.flushInterval = sanitizedConfig.flushInterval ?? DEFAULT_FLUSH_INTERVAL;
     this.maxQueueSize = sanitizedConfig.maxQueueSize ?? DEFAULT_MAX_QUEUE_SIZE;
+    this.throttleInterval = sanitizedConfig.throttleInterval ?? DEFAULT_THROTTLE_INTERVAL;
+    this.deduplicationInterval = sanitizedConfig.deduplicationInterval ?? DEFAULT_DEDUPLICATION_INTERVAL;
+    this.deduplicate = sanitizedConfig.deduplicate ?? DEFAULT_DEDUPLICATE;
+    this.maxRetries = sanitizedConfig.maxRetries ?? DEFAULT_MAX_RETRIES;
 
     this.eventBuilder = new EventBuilder({
       app_name: sanitizedConfig.app_name,
@@ -127,11 +141,11 @@ export class ErrorTrackerClient implements IErrorTrackerClient {
 
   private startBatchProcessor(): void {
     this.flushTimer = setInterval(() => {
-      this.processBatch().catch(() => { });
+      this.processQueue().catch(() => { });
     }, this.flushInterval);
 
-    if (this.flushTimer.unref) {
-      this.flushTimer.unref();
+    if (this.flushTimer && (this.flushTimer as any).unref) {
+      (this.flushTimer as any).unref();
     }
   }
 
@@ -143,6 +157,11 @@ export class ErrorTrackerClient implements IErrorTrackerClient {
     try {
       const title = this.extractErrorMessage(error);
       const event = this.eventBuilder.build(title, error, level, metadata);
+      
+      if (this.isDuplicate(event)) {
+        return this;
+      }
+
       this.enqueue(event);
     } catch (err) {
       this.handleInternalError('Failed to track error', err);
@@ -158,6 +177,11 @@ export class ErrorTrackerClient implements IErrorTrackerClient {
 
     try {
       const event = this.eventBuilder.build(title, { message: title }, level, metadata);
+      
+      if (this.isDuplicate(event)) {
+        return this;
+      }
+
       this.enqueue(event);
     } catch (err) {
       this.handleInternalError('Failed to track event', err);
@@ -166,15 +190,46 @@ export class ErrorTrackerClient implements IErrorTrackerClient {
     return this;
   }
 
+  private isDuplicate(event: EventIssueInterface): boolean {
+    if (!this.deduplicate) return false;
+
+    const fingerprint = this.generateFingerprint(event);
+    const now = Date.now();
+    const lastSeen = this.fingerprintCache.get(fingerprint);
+
+    if (lastSeen && (now - lastSeen) < this.deduplicationInterval) {
+      return true;
+    }
+
+    this.fingerprintCache.set(fingerprint, now);
+    
+    // Cleanup old entries occasionally
+    if (this.fingerprintCache.size > 1000) {
+      for (const [key, time] of this.fingerprintCache.entries()) {
+        if (now - time > this.deduplicationInterval) {
+          this.fingerprintCache.delete(key);
+        }
+      }
+    }
+
+    return false;
+  }
+
+  private generateFingerprint(event: EventIssueInterface): string {
+    const culprit = event.context.culprit || 'unknown';
+    const message = (event.event as any).message || '';
+    return `${event.title}:${message}:${culprit}`;
+  }
+
   private enqueue(event: EventIssueInterface): void {
     this.eventQueue.push(event);
 
     if (this.eventQueue.length >= this.maxQueueSize) {
-      this.processBatch().catch(() => { });
+      this.processQueue().catch(() => { });
     }
   }
 
-  private async processBatch(): Promise<void> {
+  private async processQueue(): Promise<void> {
     if (this.eventQueue.length === 0 || this.isProcessing) {
       return;
     }
@@ -182,11 +237,39 @@ export class ErrorTrackerClient implements IErrorTrackerClient {
     this.isProcessing = true;
 
     try {
-      const batch = this.eventQueue.splice(0, this.maxQueueSize);
+      while (this.eventQueue.length > 0) {
+        const event = this.eventQueue[0]; // Peek
+        let success = false;
+        let lastError: any = null;
 
-      await Promise.allSettled(
-        batch.map((event) => this.dispatchEvent(event))
-      );
+        // Try up to maxRetries + 1 (initial try + retries)
+        for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
+          try {
+            await this.dispatchEvent(event);
+            success = true;
+            break;
+          } catch (err) {
+            lastError = err;
+            if (attempt < this.maxRetries) {
+               // Wait before retry
+               await this.delay(this.throttleInterval);
+            }
+          }
+        }
+
+        if (!success) {
+          const errorMessage = lastError instanceof Error ? lastError.message : String(lastError);
+          console.error(`[ErrorTracker] Failed to dispatch event after ${this.maxRetries + 1} attempts. Event: "${event.title}". Reason: ${errorMessage}. This event will be ignored to prevent queue congestion.`);
+        }
+
+        // Remove the processed (or failed) event from the queue
+        this.eventQueue.shift();
+
+        // Strict wait before next event in queue
+        if (this.eventQueue.length > 0) {
+          await this.delay(this.throttleInterval);
+        }
+      }
     } finally {
       this.isProcessing = false;
     }
@@ -198,14 +281,17 @@ export class ErrorTrackerClient implements IErrorTrackerClient {
       const compressed = await compressAndEncode(eventString);
       await this.transport.send(compressed);
     } catch (err) {
-      this.handleInternalError('Failed to dispatch event', err);
       throw err;
     }
   }
 
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
   async forceFlush(): Promise<void> {
     while (this.eventQueue.length > 0) {
-      await this.processBatch();
+      await this.processQueue();
     }
   }
 

@@ -35,6 +35,14 @@ export class ConfigValidator {
     if (config.flushInterval !== undefined && config.flushInterval < 100) {
       throw new Error('flushInterval must be at least 100ms');
     }
+
+    if (config.throttleInterval !== undefined && config.throttleInterval < 0) {
+      throw new Error('throttleInterval cannot be negative');
+    }
+
+    if (config.deduplicationInterval !== undefined && config.deduplicationInterval < 0) {
+      throw new Error('deduplicationInterval cannot be negative');
+    }
   }
 
   static sanitize(config: ClientConfig): ClientConfig {

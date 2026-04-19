@@ -27,9 +27,12 @@ type ClientConfig struct {
 	Enabled       bool
 	MaxRetries    int
 	Timeout       time.Duration
-	FlushInterval time.Duration
-	MaxQueueSize  int
-	Headers       map[string]string
+	FlushInterval      time.Duration
+	MaxQueueSize       int
+	ThrottleInterval   time.Duration
+	DeduplicationInterval time.Duration
+	Deduplicate        bool
+	Headers            map[string]string
 }
 
 func (c *ClientConfig) Validate() error {
@@ -61,8 +64,16 @@ func (c *ClientConfig) Validate() error {
 		return errors.New("flushInterval must be at least 100ms")
 	}
 
-	if c.MaxQueueSize < 1 {
+	if (c.MaxQueueSize < 1) {
 		return errors.New("maxQueueSize must be at least 1")
+	}
+
+	if (c.ThrottleInterval < 0) {
+		return errors.New("throttleInterval cannot be negative")
+	}
+
+	if (c.DeduplicationInterval < 0) {
+		return errors.New("deduplicationInterval cannot be negative")
 	}
 
 	return nil

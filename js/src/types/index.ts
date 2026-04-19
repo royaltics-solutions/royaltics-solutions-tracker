@@ -45,6 +45,9 @@ export interface ClientConfig {
   readonly timeout?: number;
   readonly flushInterval?: number;
   readonly maxQueueSize?: number;
+  readonly throttleInterval?: number;
+  readonly deduplicate?: boolean;
+  readonly deduplicationInterval?: number;
   readonly headers?: Readonly<Record<string, string>>;
 }
 

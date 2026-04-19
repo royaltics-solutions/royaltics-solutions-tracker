@@ -14,6 +14,9 @@ public sealed record ClientConfig
     public int Timeout { get; init; } = 10000;
     public int FlushInterval { get; init; } = 5000;
     public int MaxQueueSize { get; init; } = 50;
+    public int ThrottleInterval { get; init; } = 3000;
+    public bool Deduplicate { get; init; } = true;
+    public int DeduplicationInterval { get; init; } = 60000;
     public Dictionary<string, string> Headers { get; init; } = new();
 
     public void Validate()
@@ -42,5 +45,11 @@ public sealed record ClientConfig
 
         if (MaxQueueSize < 1)
             throw new ArgumentException("MaxQueueSize must be at least 1", nameof(MaxQueueSize));
+
+        if (ThrottleInterval < 0)
+            throw new ArgumentException("ThrottleInterval cannot be negative", nameof(ThrottleInterval));
+
+        if (DeduplicationInterval < 0)
+            throw new ArgumentException("DeduplicationInterval cannot be negative", nameof(DeduplicationInterval));
     }
 }

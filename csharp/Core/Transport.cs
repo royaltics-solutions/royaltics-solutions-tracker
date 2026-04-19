@@ -29,28 +29,7 @@ public sealed class Transport : IDisposable
             LicenseDevice = _config.LicenseDevice
         };
 
-        Exception? lastError = null;
-
-        for (var attempt = 0; attempt <= _config.MaxRetries; attempt++)
-        {
-            try
-            {
-                await MakeRequestAsync(payload, cancellationToken);
-                return;
-            }
-            catch (Exception ex)
-            {
-                lastError = ex;
-
-                if (attempt < _config.MaxRetries)
-                {
-                    var backoff = CalculateBackoff(attempt);
-                    await Task.Delay(backoff, cancellationToken);
-                }
-            }
-        }
-
-        throw lastError ?? new InvalidOperationException("Transport failed with unknown error");
+        await MakeRequestAsync(payload, cancellationToken);
     }
 
     private async Task MakeRequestAsync(TransportPayload payload, CancellationToken cancellationToken)
@@ -74,18 +53,10 @@ public sealed class Transport : IDisposable
 
         if (!response.IsSuccessStatusCode)
         {
+            var errorContent = await response.Content.ReadAsStringAsync(cancellationToken);
             throw new HttpRequestException(
-                $"HTTP {(int)response.StatusCode}: {response.ReasonPhrase}");
+                $"HTTP {(int)response.StatusCode}: {response.ReasonPhrase}. Details: {errorContent}");
         }
-    }
-
-    private static TimeSpan CalculateBackoff(int attempt)
-    {
-        const int baseDelay = 1000;
-        const int maxDelay = 30000;
-        
-        var delay = Math.Min(baseDelay * (1 << attempt), maxDelay);
-        return TimeSpan.FromMilliseconds(delay);
     }
 
     public void Dispose()

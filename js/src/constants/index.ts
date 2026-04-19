@@ -3,6 +3,9 @@ export const DEFAULT_MAX_QUEUE_SIZE = 50;
 export const DEFAULT_MAX_RETRIES = 3;
 export const DEFAULT_TIMEOUT = 10000;
 export const DEFAULT_ENABLED = true;
+export const DEFAULT_THROTTLE_INTERVAL = 3000;
+export const DEFAULT_DEDUPLICATION_INTERVAL = 60000;
+export const DEFAULT_DEDUPLICATE = true;
 
 export const MIN_FLUSH_INTERVAL = 100;
 export const MAX_FLUSH_INTERVAL = 60000;
