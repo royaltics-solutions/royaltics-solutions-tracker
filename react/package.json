@@ -1,6 +1,6 @@
 {
     "name": "@royaltics/tracker-react",
-    "version": "0.0.26",
+    "version": "0.0.27",
     "description": "React hooks for Royaltics Error Tracker",
     "type": "module",
     "main": "./dist/index.cjs",
@@ -39,9 +39,6 @@
     "peerDependencies": {
         "react": ">=19.0.0"
     },
-    "dependencies": {
-        "@royaltics/tracker": "^0.0.21"
-    },
     "devDependencies": {
         "@testing-library/jest-dom": "^6.9.1",
         "@testing-library/react": "^14.3.1",
@@ -57,5 +54,8 @@
         "vite-plugin-dts": "^4.5.4",
         "vitest": "^1.6.1"
     },
-    "pnpm": {}
+    "pnpm": {},
+    "dependencies": {
+        "@royaltics/tracker": "^0.0.23"
+    }
 }
